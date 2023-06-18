@@ -1,0 +1,20 @@
+/* Add your customizations of layout here */
+/* Código propio */
+.card {
+  line-height: 2em;
+  .ui-selectonemenu {
+    line-height: normal;
+  }
+  .ui-datatable {
+    line-height: normal;
+    .ui-chkbox .ui-chkbox-box {
+      color: #8C0044;
+    }
+  }
+  .ui-fieldset {
+    line-height: normal;
+  }
+  .ui-chkbox-box {
+    line-height: normal;
+  }
+}

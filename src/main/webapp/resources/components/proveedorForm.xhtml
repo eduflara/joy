@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="entidad" type="com.joyero.app.proveedor.Proveedor" required="true"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="false"/>
+        <composite:attribute name="readOnly" required="false" default="false"/>
+        <composite:attribute name="widgetVarTbl" required="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.proveedor" var="proveedorLbl"/>
+
+        <!--<editor-fold desc="botonera del formulario">-->
+        <p:toolbar>
+            <p:toolbarGroup styleClass="ui-inputgroup">
+                <p:commandButton title="#{txt.nuevo}" icon="fa fa-file-o"
+                                 actionListener="#{cc.attrs.controlador.nuevo()}" process="@this" update="@form"
+                                 resetValues="true"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"/>
+
+                <p:commandButton title="#{cc.attrs.controlador.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                 icon="fa fa-floppy-o" actionListener="#{cc.attrs.controlador.guardar()}"
+                                 process="@form"
+                                 update="@form"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"/>
+
+                <p:commandButton title="#{txt.eliminar}" icon="fa fa-trash-o"
+                                 actionListener="#{cc.attrs.controlador.eliminar()}" process="@this" update="@form"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();">
+                    <p:confirm header="#{txt.confirmacion}" message="#{txt.deseaEliminar}" icon="ui-icon-alert"/>
+                </p:commandButton>
+            </p:toolbarGroup>
+        </p:toolbar>
+        <!--</editor-fold>-->
+
+        <p:messages autoUpdate="false" showDetail="true" showSummary="false"/>
+
+        <!--<editor-fold desc="controles del formulario">-->
+        
+        
+        <p:outputLabel value="#{proveedorLbl.codigo}" for="@next"/>
+        <p:inputText widgetVar="codigo" id="codigo"
+                     value="#{cc.attrs.entidad.codigo}"
+                     readonly="#{cc.attrs.readOnly}"
+                     styleClass="#{cc.attrs.readOnly ? 'readOnly' : ''}"/>
+        <p:message for="@previous"/>
+
+        <!--<editor-fold desc="text proveedor - nombre">-->
+        <p:outputLabel value="#{proveedorLbl.nombre}" for="@next"/>
+        <p:inputText widgetVar="nombre" id="nombre"
+                     value="#{cc.attrs.entidad.nombre}"
+                     readonly="#{cc.attrs.readOnly}"
+                     styleClass="#{cc.attrs.readOnly ? 'readOnly' : ''}"/>
+        <p:message for="@previous"/>
+        <!--</editor-fold>-->
+
+        <!--</editor-fold>-->
+
+
+        <p:commandButton title="#{cc.attrs.controlador.modificarRegistro ?  txt.modificar : txt.guardar}"
+                         icon="fa fa-floppy-o"
+                         value="#{cc.attrs.controlador.modificarRegistro ?  txt.modificar : txt.guardar}"
+                         actionListener="#{cc.attrs.controlador.guardar()}" process="@form" update="@form"
+                         oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"
+                         style="width:50%; margin-left:25%;"/>
+    </composite:implementation>
+</h:body>
+
+</html>

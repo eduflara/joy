@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+>
+<f:view locale="#{controladorSesion.currentLocale}">
+    <h:head>
+        <f:facet name="first">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+            <meta name="apple-mobile-web-app-capable" content="yes"/>
+        </f:facet>
+        <title>#{app.nombreAplicacion}</title>
+        <h:outputScript name="js/nanoscroller.js" library="omega-layout"/>
+        <h:outputScript name="js/layout.js" library="omega-layout"/>
+
+        <h:outputScript name="primefaces_es.js" library="primefaces-locale"/>
+        <h:outputScript name="primefaces_eu.js" library="primefaces-locale"/>
+
+
+        <ui:insert name="head"/>
+    </h:head>
+    <!--menu-layout-overlay / main-body menu-layout-static-->
+
+    <f:event listener="#{barraNavegacionControlador.comprobarNavegacion}" type="preRenderView"/>
+    <ui:insert name="preRenderView"/>
+
+
+    <h:body styleClass="main-body menu-layout-overlay">
+        <div class="wrapper">
+            <ui:include src="topbar.xhtml"/>
+
+            <ui:include src="sidebar.xhtml"/>
+
+            <div class="main">
+                <ui:insert name="content"/>
+            </div>
+
+            <!--<ui:include src="footer.xhtml"/>-->
+        </div>
+
+        <p:ajaxStatus style="width:32px;height:32px;position:fixed;right:7px;bottom:7px">
+            <f:facet name="start">
+                <p:graphicImage name="images/preloader.gif" library="omega-layout-2.0.0" style="width: 32px;"/>
+            </f:facet>
+
+            <f:facet name="complete">
+                <h:outputText value=""/>
+            </f:facet>
+        </p:ajaxStatus>
+
+
+        <h:outputStylesheet name="css/animate.css" library="omega-layout"/>
+        <h:outputStylesheet name="css/nanoscroller.css" library="omega-layout"/>
+        <h:outputStylesheet name="css/layout.css" library="omega-layout"/>
+        <h:outputStylesheet name="css/grid.css" library="omega-layout"/>
+    </h:body>
+
+    <!--CAMBIOS PROPIOS-->
+
+    <ui:insert name="dialog"/>
+
+    <p:dialog widgetVar="cambiarContrasenaDlg" draggable="true" modal="true"
+              resizable="false" width="600"
+              header="#{txt.cambiarContrasena}"
+              onShow="$(PrimeFaces.escapeClientId('passwordForm:nombreCompleto')).focus();">
+
+        <h:form>
+            <p:defaultCommand target="cambiarBtn"/>
+
+            <p:panel widgetVar="cambioClavePnl">
+                <p:messages showDetail="false"/>
+
+                <div class="ui-fluid">
+                    <p:panelGrid columns="1" columnClasses="ui-grid-col-6" layout="grid"
+                                 styleClass="ui-panelgrid-blank">
+
+                        <p:outputLabel value="#{txt.nombreCompleto}" for="nombreCompleto"/>
+                        <p:inputText id="nombreCompleto" value="#{cambiarClaveCtl.usuario.nombreCompleto}" size="50"
+                                     styleClass="readOnly"
+                                     tabindex="1" readonly="true"/>
+
+                        <p:outputLabel value="#{txt.password}" for="password"/>
+                        <p:password id="password" value="#{cambiarClaveCtl.password}" match="passwordConfirm"
+                                    widgetVar="password" feedback="true" tabindex="2"
+                                    weakLabel="#{txt.contrasenaDebil}" strongLabel="#{txt.contrasenaFuerte}"
+                                    goodLabel="#{txt.contrasenaBuena}"
+                                    promptLabel="#{txt.introducirContrasena}" required="true"/>
+
+                        <p:outputLabel value="#{txt.repetirContrasena}" for="passwordConfirm"/>
+                        <p:password id="passwordConfirm" value="#{cambiarClaveCtl.password}" tabindex="3"/>
+                    </p:panelGrid>
+
+                    <p:commandButton id="cambiarBtn" value="#{txt.cambiarContrasena}" icon="ui-icon-disk"
+                                     process="@form" update="@widgetVar(cambioClavePnl)"
+                                     actionListener="#{cambiarClaveCtl.cambiarClave}"/>
+                </div>
+            </p:panel>
+        </h:form>
+    </p:dialog>
+
+    <p:dialog widgetVar="cambiarIdiomaDlg" draggable="true" modal="true"
+              resizable="false" width="400"
+              header="#{txt.cambiarIdioma}">
+        <h:form>
+
+            <p:panel>
+                <ui:repeat value="#{controladorSesion.supportedLocales}" var="locale">
+
+                    <p:panelGrid columns="2" styleClass="ui-panelgrid-blank">
+
+                        <p:commandLink action="#{controladorSesion.cambiarIdioma(locale.language)}" process="@this"
+                                       actionListener="#{controladorMenuAplicacion.cargarMenu(locale.language)}"
+                                       style="text-align:middle; background-color: #{locale.language eq controladorSesion.currentLocaleStr ? 'blue' : ''}">
+                            <p:graphicImage name="flags/#{locale.language}.png" library="images" width="48"
+                                            height="48"/>
+                        </p:commandLink>
+
+                        <p:outputLabel value="#{txt['idioma.'.concat(locale.language)]}"/>
+                    </p:panelGrid>
+                </ui:repeat>
+            </p:panel>
+        </h:form>
+    </p:dialog>
+
+    <p:confirmDialog widgetVar="confirmacionDialog" global="true" showEffect="fade" hideEffect="fade">
+        <h:form>
+            <p:commandButton value="#{txt.si}" type="button" styleClass="ui-confirmdialog-yes"
+                             icon="ui-icon-check"/>
+            <p:commandButton value="#{txt.no}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>
+        </h:form>
+    </p:confirmDialog>
+    <!--CAMBIOS PROPIOS-->
+</f:view>
+</html>

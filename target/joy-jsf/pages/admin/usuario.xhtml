@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:o="http://omnifaces.org/ui"
+>
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <ui:define name="head">
+<!--        <f:loadBundle basename="com.joyero.spc.enum" var="enumLabel"/>-->
+<!--        <f:loadBundle basename="com.joyero.spc.usuario" var="usuarioLbl"/>-->
+<!--        <f:loadBundle basename="com.joyero.spc.alarmaUsuario" var="alarmausuarioLbl"/>-->
+<!--        <f:loadBundle basename="com.joyero.spc.usuarioDestinatario" var="usuariodestinatarioLbl"/>-->
+    </ui:define>
+
+    <ui:define name="content">
+        <!--<f:metadata>-->
+        <!--&lt;!&ndash;Este método se ejecuta siempre en la carga de la página &ndash;&gt;-->
+        <!--<o:viewAction action="#{usuarioCtl.onLoad}"/>-->
+        <!--&lt;!&ndash;Este método comprueba si el usuario tiene acceso a la página &ndash;&gt;-->
+        <o:viewAction action="#{usuarioCtl.comprobarAcceso}"/>
+        <!--</f:metadata>-->
+
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-4 dashboard">
+                <div class="card">
+                    <h1>#{txt['formularioUsuarios']}</h1>
+                    <h:form>
+                        <p:panel widgetVar="datos" style="border: none;">
+                            <p:messages showDetail="false"/>
+                            <p:defaultCommand target="guardarUsuarioBtn"/>
+                            <p:toolbar>
+                                <p:toolbarGroup align="left">
+                                    <p:commandButton title="${txt.nuevo}" icon="ui-icon-document"
+                                                     action="#{usuarioCtl.nuevo}" process="@this"
+                                                     update="@form, @widgetVar(tablaUsuarios)"
+                                                     oncomplete="PF('tablaUsuarios').filter(); PF('tablaUsuarios').unselectAllRows();"
+                                                     resetValues="true"/>
+
+                                    <p:commandButton id="guardarUsuarioBtn"
+                                                     title="#{usuarioCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                                     icon="ui-icon-disk"
+                                                     actionListener="#{usuarioCtl.guardar}"
+                                                     process="@form"
+                                                     update="@widgetVar(datosUsuario)"
+                                                     oncomplete="PF('tablaUsuarios').filter(); PF('tablaUsuarios').unselectAllRows();"/>
+
+                                    <p:commandButton id="btnEliminar" title="#{txt.eliminar}" icon="ui-icon-trash"
+                                                     actionListener="#{usuarioCtl.eliminar}"
+                                                     process="@this"
+                                                     update="@widgetVar(datosUsuario)"
+                                                     disabled="#{usuarioCtl.entidad.id eq null}"
+                                                     oncomplete="PF('tablaUsuarios').filter(); PF('tablaUsuarios').unselectAllRows();">
+                                        <p:confirm header="#{txt.confirmacion}" message="#{txt.deseaEliminarRegistros}"
+                                                   icon="ui-icon-alert"/>
+                                    </p:commandButton>
+
+                                </p:toolbarGroup>
+                                <p:toolbarGroup align="right">
+                                    <p:commandButton widgetVar="btnDestinatarios"
+                                                     disabled="#{usuarioCtl.entidad.id eq null}"
+                                                     id="btnDestinatarios" icon="fa fa-bell"
+                                                     process="@this"
+                                                     value="#{usuarioLbl.destinatariosUsuario}"
+                                                     action="#{usuarioCtl.verFormulaUsuarioDestino()}"/>
+                                </p:toolbarGroup>
+                            </p:toolbar>
+
+                            <p:fieldset widgetVar="datosUsuario">
+                                <p:messages showDetail="true" showSummary="false"/>
+
+
+                                <p:panelGrid columns="1"
+                                             columnClasses="ui-grid-col-11 ui-fluid"
+                                             layout="grid" styleClass="ui-panelgrid-blank"
+                                             style="border:0px none; background-color:transparent;">
+
+                                    <p:outputLabel value="#{usuarioLbl.username}" for="nombreUsuario"/>
+                                    <p:inputText id="nombreUsuario" value="#{usuarioCtl.entidad.username}"
+                                                 placeholder="#{txt.nombreUsuario}" required="true"
+                                                 tabindex="1" readonly="#{usuarioCtl.modificarRegistro}"/>
+
+                                    <p:outputLabel value="#{usuarioLbl.nombreCompleto}" for="nombreCompleto"/>
+                                    <p:inputText id="nombreCompleto" required="true"
+                                                 value="#{usuarioCtl.entidad.nombreCompleto}"
+                                                 placeholder="#{txt.nombreCompleto}"
+                                                 tabindex="2" readonly="false"/>
+
+                                    <!-- Campo que no se usa, ahora se hace el login desde la pantalla principal
+                                    <p:outputLabel for="idioma" value="#{txt['idioma']}:"/>
+                                    <p:selectOneMenu id="idioma" value="#{usuarioCtl.entidad.idioma}">
+                                        <f:selectItems value="#{controladorSesion.supportedLocales}" var="locale"
+                                                       itemLabel="#{txt['idioma.'.concat(locale.language)]}"
+                                                       itemValue="#{locale.language}"/>
+
+
+                                    </p:selectOneMenu>-->
+
+                                    <p:outputLabel value="#{usuarioLbl.dni}" for="dni"/>
+                                    <p:inputText id="dni"
+                                                 placeholder="#{txt.dni}"
+                                                 tabindex="3"
+                                                 value="#{usuarioCtl.entidad.dni}"/>
+
+                                    <p:outputLabel value="#{usuarioLbl.correo}" for="correo"/>
+                                    <p:inputText id="correo"
+                                                 placeholder="#{txt.correo}"
+                                                 tabindex="4"
+                                                 value="#{usuarioCtl.entidad.correo}"/>
+
+                                    <p:outputLabel value="#{usuarioLbl.telefono}" for="telefono"/>
+                                    <p:inputText id="telefono"
+                                                 placeholder="#{txt.telefono}"
+                                                 tabindex="5"
+                                                 value="#{usuarioCtl.entidad.telefono}"/>
+
+                                    <p:outputLabel value="#{usuarioLbl.password}" for="password"/>
+                                    <p:password id="password" value="#{usuarioCtl.password}"
+                                                match="passwordConfirm"
+                                                feedback="true"
+                                                weakLabel="#{txt.contrasenaDebil}"
+                                                strongLabel="#{txt.contrasenaFuerte}"
+                                                goodLabel="#{txt.contrasenaBuena}"
+                                                promptLabel="#{txt.introducirContrasena}"
+                                                placeholder="#{txt.contrasena}"
+                                                tabindex="6"/>
+
+                                    <p:outputLabel value="#{usuarioLbl.repetirPassword}" for="passwordConfirm"/>
+                                    <p:password id="passwordConfirm" value="#{usuarioCtl.password}"
+                                                placeholder="#{txt.repetirContrasena}"
+                                                tabindex="7"/>
+
+
+                                    <p:outputLabel value="#{usuarioLbl.modoAcceso}" for="@next"/>
+                                    <p:selectOneMenu widgetVar="modoAceso"
+                                                     value="#{usuarioCtl.entidad.modoAcceso}">
+                                        <f:selectItems var="tipo" value="#{usuarioCtl.modosAcceso}"
+                                                       itemLabel="#{enumLabel[tipo.descripcion]}"
+                                                       itemValue="#{tipo.codigo}"/>
+                                    </p:selectOneMenu>
+
+
+                                    <!--<si:input tipo="#{usuarioCtl.inputSelectone}"-->
+                                    <!--label="#{app.buzonasignado}" renderLabel="true"-->
+                                    <!--value="#{usuarioCtl.entidad.buzon}" converter="#{buzonCnv}"-->
+                                    <!--widgetVar="buzon">-->
+                                    <!--<f:selectItem itemValue="#{null}" itemLabel=""/>-->
+                                    <!--<f:selectItems value="#{usuarioCtl.buzones}" var="buzon"-->
+                                    <!--itemLabel="#{buzon.denominacion}"-->
+                                    <!--itemValue="#{buzon}"/>-->
+                                    <!--</si:input>-->
+
+<!--                                    <p:selectBooleanCheckbox id="miembro_mesa"-->
+<!--                                                             value="#{usuarioCtl.entidad.miembroMesa}"-->
+<!--                                                             itemLabel="#{usuarioLbl.miembroMesa}"-->
+<!--                                                             tabindex="7"/>-->
+
+                                    <p:selectBooleanCheckbox id="activo"
+                                                             value="#{usuarioCtl.entidad.activo}"
+                                                             itemLabel="#{txt.activo}"
+                                                             tabindex="7"/>
+
+<!--                                    <p:outputLabel value="#{usuarioLbl.buzon}" for="buzonUsuario"/>-->
+<!--                                    <p:selectOneMenu id="buzonUsuario" widgetVar="buzonUsuario" value="#{usuarioCtl.entidad.idBuzon}">-->
+<!--                                        <f:selectItem itemValue="" itemLabel="" noSelectionOption="true"/>-->
+<!--                                        <f:selectItems value="#{usuarioCtl.buzonesListablesUsuario}"-->
+<!--                                                       var="buzon"-->
+<!--                                                       itemLabel="#{buzon.denominacion}"-->
+<!--                                                       itemValue="#{buzon.id}"/>-->
+<!--                                    </p:selectOneMenu>-->
+
+
+                                    <p:outputLabel value="#{usuarioLbl.funcionInicial}" for="@next"/>
+                                    <p:selectOneMenu widgetVar="property"
+                                                     value="#{usuarioCtl.entidad.funcionInicial}">
+                                        <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{usuarioCtl.funcionesAsignadas}" var="item"
+                                                       itemLabel="#{app['menu.'.concat(item.funcion.idPagina)]} (#{item.funcion.funcionSuperior.idPagina})"
+                                                       itemValue="#{item.id}"/>
+                                    </p:selectOneMenu>
+                                    <p:message for="@previous"/>
+                                </p:panelGrid>
+                                <br/>
+                                <p:panelGrid columns="2" columnClasses="ui-grid-col-6, ui-grid-col-6" layout="grid"
+                                             styleClass="ui-panelgrid-blank">
+                                    <p:commandButton widgetVar="botonAlarmas"
+                                                     id="botonAlarmas" icon="fa fa-bell"
+                                                     value="#{usuarioLbl.alarmasUsuario}"
+                                                     style="width: 150px;margin-top:1.1em;"
+                                                     update="@widgetVar(alarmasUsuarioForm)"
+                                                     onclick="PF('alarmasUsuarioDialog').show()"
+                                    />
+
+
+                                    <p:commandButton widgetVar="botonDestinatarios"
+                                                     id="botonDestinatarios" icon="fa fa-bell"
+                                                     value="#{usuarioLbl.destinatariosUsuario}"
+                                                     style="width: 150px;margin-top:1.1em;"
+                                                     onclick="PF('usuarioDestinatarioDialog').show()"
+                                                     update="@widgetVar(usuarioDestinatarioDialog"/>
+
+
+                                </p:panelGrid>
+
+                                <p:spacer height="10px"/>
+
+                                <p:dataTable value="#{usuarioCtl.grupos}" var="grupo"
+                                             selection="#{usuarioCtl.gruposSeleccionados}" rowKey="#{grupo.id}">
+
+                                    <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
+
+                                    <p:column headerText="#{txt.grupoUsuarios}">
+                                        <h:outputText value="#{grupo.nombre}"/>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </p:fieldset>
+                        </p:panel>
+                    </h:form>
+                </div>
+            </div>
+
+            <div class="ui-g-12 ui-lg-8 dashboard">
+                <div class="card">
+                    <h1>#{txt['listadoUsuarios']}</h1>
+                    <h:form>
+                        <p:dataTable id="tablaUsuarios" widgetVar="tablaUsuarios" value="#{usuarioCtl.tablemodel}"
+                                     filterEvent="enter" resizableColumns="true" reflow="true"
+                                     var="usuario"
+                                     rows="20"
+                                     selectionMode="single"
+                                     selection="#{usuarioCtl.tablemodel.seleccion}"
+                                     paginator="true"
+                                     paginatorPosition="bottom"
+                                     lazy="true"
+                                     currentPageReportTemplate="(${txt.registros}: {startRecord} - {endRecord} ${txt.de} {totalRecords}, ${txt.pagina}: {currentPage} ${txt.de} {totalPages})"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="10,20,25"
+                                     emptyMessage="${txt.tablaVacia}">
+
+                            <p:ajax event="rowSelect" listener="#{usuarioCtl.cargarSeleccion}"
+                                    update="@widgetVar(datos), @widgetVar(alarmasUsuarioDialog), @widgetVar(usuarioDestinatarioDialog)"
+                                    resetValues="true"/>
+
+                            <p:column headerText="#{txt.nombreUsuario}"
+                                      filterBy="#{usuario.username}"
+                                      filterValue="#{usuarioCtl.tablemodel.filtros['username']}"
+                                      sortBy="#{usuario.username}">
+                                <h:outputText value="#{usuario.username}"/>
+                            </p:column>
+
+                            <p:column headerText="#{txt.nombreCompleto}"
+                                      filterBy="#{usuario.nombreCompleto}"
+                                      filterValue="#{usuarioCtl.tablemodel.filtros['nombreCompleto']}"
+                                      sortBy="#{usuario.nombreCompleto}">
+                                <h:outputText value="#{usuario.nombreCompleto}"/>
+                            </p:column>
+
+
+                        </p:dataTable>
+                    </h:form>
+                </div>
+            </div>
+        </div>
+
+    </ui:define>
+
+
+    <ui:define name="dialog">
+        <!--SPC-->
+        <p:dialog widgetVar="alarmasUsuarioDialog" modal="true" id="alarmasUsuarioDialog" closeOnEscape="true"
+                  width="45%" resizable="false" height="400px" style="" showHeader="true"
+                  header="#{alarmausuarioLbl.asociarAlarmas}">
+
+
+            <h:form>
+                <p:panel widgetVar="alarmasUsuarioForm">
+                    <p:messages autoUpdate="false" showDetail="true" showSummary="false"/>
+
+                    <p:panelGrid columns="1"
+                                 columnClasses="ui-grid-col-11 ui-fluid"
+                                 layout="grid" styleClass="ui-panelgrid-blank"
+                                 style="border:0px none; background-color:transparent;">
+
+<!--                        <p:outputLabel value="#{alarmausuarioLbl.alarma1}" for="@next"/>-->
+<!--                        <p:inputSwitch value="#{usuarioCtl.alarma1x}" widgetVar="alarma1"-->
+<!--                                       offLabel="#{txt.no}" onLabel="#{txt.si}"/>-->
+<!--                        <p:messages for="@previous"/>-->
+
+<!--                        <p:outputLabel value="#{alarmausuarioLbl.alarma2}" for="@next"/>-->
+<!--                        <p:inputSwitch value="#{usuarioCtl.alarma2x}" widgetVar="alarma2"-->
+<!--                                       offLabel="#{txt.no}" onLabel="#{txt.si}"/>-->
+<!--                        <p:messages for="@previous"/>-->
+
+<!--                        <p:outputLabel value="#{alarmausuarioLbl.alarma3}" for="@next"/>-->
+<!--                        <p:inputSwitch value="#{usuarioCtl.alarma3x}" widgetVar="alarma3"-->
+<!--                                       offLabel="#{txt.no}" onLabel="#{txt.si}"/>-->
+<!--                        <p:messages for="@previous"/>-->
+
+<!--                        <p:outputLabel value="#{alarmausuarioLbl.alarma4}" for="@next"/>-->
+<!--                        <p:inputSwitch value="#{usuarioCtl.alarma4x}" widgetVar="alarma4"-->
+<!--                                       offLabel="#{txt.no}" onLabel="#{txt.si}"/>-->
+<!--                        <p:messages for="@previous"/>-->
+
+<!--                        <p:outputLabel value="#{alarmausuarioLbl.alarma5}" for="@next"/>-->
+<!--                        <p:inputSwitch value="#{usuarioCtl.alarma5x}" widgetVar="alarma5"-->
+<!--                                       offLabel="#{txt.no}" onLabel="#{txt.si}"/>-->
+<!--                        <p:messages for="@previous"/>-->
+
+
+                    </p:panelGrid>
+
+                    <p:panelGrid columns="2" columnClasses="ui-grid-col-6, ui-grid-col-6" layout="grid"
+                                 styleClass="ui-panelgrid-blank">
+                        <p:commandButton title="#{usuarioCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                         value="#{usuarioCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                         actionListener="#{usuarioCtl.guardarAlarmas()}"
+                                         oncomplete="PF('alarmasUsuarioDialog').hide()"
+                                         icon="fa fa-floppy-o"
+                                         style="width: 100%; "/>
+
+                        <p:commandButton title="#{txt.cerrar}"
+                                         value="#{txt.cerrar}"
+                                         onclick="PF('alarmasUsuarioDialog').hide()"
+                                         process="@this"
+                                         icon="fa fa-times"
+                                         style="width: 100%; "/>
+                    </p:panelGrid>
+
+                </p:panel>
+            </h:form>
+
+
+        </p:dialog>
+
+        <p:dialog widgetVar="usuarioDestinatarioDialog" modal="true" id="usuarioDestinatarioDialog" closeOnEscape="true"
+                  width="45%" resizable="false" height="280" style="" showHeader="true"
+                  header="#{usuariodestinatarioLbl.asociarDestinatarios}">
+            <h:form>
+                <p:separator/>
+
+<!--                <p:dataTable widgetVar="tablaUsuarioDestinatario" id="tablaTblSi" var="usuarioDestinatario"-->
+<!--                             value="#{usuarioCtl.listadoUsuarioDest}"-->
+<!--                             lazy="false"-->
+<!--                             rows="10" rowKey="#{usuarioDestinatarioCtl.usuarioSeguridad.id}"-->
+<!--                             paginator="true">-->
+
+
+<!--                    <p:column headerText="#{usuariodestinatarioLbl.legislatura}">-->
+<!--                        <h:outputText value="#{usuarioDestinatario.legislatura.periodo}"/>-->
+<!--                    </p:column>-->
+<!--                    <p:column headerText="#{usuariodestinatarioLbl.destinatario}">-->
+<!--                        <h:outputText value="#{usuarioDestinatario.destinoDistribucion.nombre}"/>-->
+<!--                    </p:column>-->
+
+
+<!--                </p:dataTable>-->
+
+                <p:separator style="border: none;"/><p:separator style="border: none;"/>
+
+
+                <p:commandButton widgetVar="botonCerrarDialogUsuarioDestinatario"
+                                 id="botonCerrarDialogUsuarioDestinatario" icon="fa fa-times"
+                                 value="#{txt.cerrar}"
+                                 style="width: 150px;margin-top:1.1em;margin-left:40%"
+                                 onclick="PF('usuarioDestinatarioDialog').hide()"
+                >
+                </p:commandButton>
+
+
+            </h:form>
+        </p:dialog>
+    </ui:define>
+
+
+</ui:composition>
+</html>

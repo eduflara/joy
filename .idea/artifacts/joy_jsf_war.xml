@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="joy-jsf:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>joy-jsf</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="joy-jsf.war">
+      <element id="artifact" artifact-name="joy-jsf:war exploded" />
+    </root>
+  </artifact>
+</component>

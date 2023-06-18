@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://java.sun.com/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="widgetVar" required="yes"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="true"/>
+        <composite:attribute name="tablemodel" type="com.joyero.base.jsf.TableModelEntidad" required="true"/>
+        <composite:attribute name="onRowSelect" required="false" method-signature="void listerner()"/>
+        <composite:attribute name="onRowSelectUpdate" required="false"/>
+        <composite:attribute name="onRowSelectComplete" required="false"/>
+        <composite:attribute name="exportable" required="false" default="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.pedido" var="pedidoLbl"/>
+        <p:outputLabel rendered="#{cc.attrs.entidad.id ne null}" value="#{pedidoLbl.estado}"
+                       for="@next"/>
+
+        <p:dataTable widgetVar="#{cc.attrs.widgetVar}"
+                     value="#{cc.attrs.tablemodel}"
+                     id="#{cc.attrs.widgetVar}"
+                     var="recepcionPedido"
+                     filterEvent="enter"
+                     reflow="true"
+                     resizableColumns="true"
+                     sortBy="#{recepcionPedido.id}"
+                     rows="20"
+                     selectionMode="single"
+                     selection="#{cc.attrs.tablemodel.seleccion}"
+                     paginator="true"
+                     paginatorPosition="bottom"
+                     lazy="true"
+                     currentPageReportTemplate="(${txt.registros}: {startRecord} - {endRecord} ${txt.de} {totalRecords}, ${txt.pagina}: {currentPage} ${txt.de} {totalPages})"
+                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}"
+                     rowsPerPageTemplate="10,20,25"
+                     emptyMessage="${txt.tablaVacia}">
+
+            <f:facet name="header">
+
+            </f:facet>
+
+            <!--<editor-fold desc="columnas de la tabla">-->
+            <p:column headerText="ID" rendered="#{cc.attrs.controlador.modoDepuracion}" width="50">
+                <h:outputText value="#{recepcionPedido.id}"/>
+            </p:column>
+
+
+            <p:column headerText="#{pedidoLbl.unidadesRecepcionadas}"
+                      filterBy="#{recepcionPedido.unidades}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['recepcionPedido.unidades']}"
+                      sortBy="#{recepcionPedido.unidades}">
+                <h:outputText value="#{recepcionPedido.unidades}"/>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.unidadesRecepcionadasAlmacen}"
+                      filterBy="#{recepcionPedido.unidadesAlmacen}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['recepcionPedido.unidadesAlmacen']}"
+                      sortBy="#{recepcionPedido.unidadesAlmacen}">
+                <h:outputText value="#{recepcionPedido.unidadesAlmacen}"/>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.coste}"
+                      filterBy="#{recepcionPedido.coste}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['recepcionPedido.coste']}"
+                      sortBy="#{recepcionPedido.coste}">
+                <h:outputText value="#{recepcionPedido.coste}"/>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.fechaRecibido}"
+                      filterBy="#{recepcionPedido.fecha}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['fechaRecibido.fecha']}"
+                      sortBy="#{recepcionPedido.fecha}">
+                <h:outputText value="#{recepcionPedido.fecha}">
+                    <f:convertDateTime pattern="dd-MM-yyyy HH:mm" type="localDate" />
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.referenciaProveedor}"
+                      filterBy="#{recepcionPedido.referenciaProveedor}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['recepcionPedido.referenciaProveedor']}"
+                      sortBy="#{recepcionPedido.referenciaProveedor}">
+                <h:outputText value="#{recepcionPedido.referenciaProveedor}"/>
+            </p:column>
+
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="eventos ajax de la tabla">-->
+            <p:ajax event="rowSelect" resetValues="true" update="#{cc.attrs.onRowSelectUpdate}"
+                    listener="#{cc.attrs.onRowSelect}"
+                    oncomplete="#{cc.attrs.onRowSelectComplete}"/>
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="exportaciones de la tabla">-->
+            <c:if test="#{cc.attrs.exportable}">
+                <f:facet name="{Exporters}">
+                    <div style="float:right;padding-top: 5px;">
+                        <h:commandLink>
+                            <p:graphicImage name="images/pdf.png" library="omega-layout" width="20"/>
+                            <p:dataExporter encoding="CP1254" type="pdf" target="@widgetVar(#{cc.attrs.widget})"
+                                            fileName="pedido"/>
+                        </h:commandLink>
+
+                        <h:commandLink>
+                            <p:graphicImage name="images/excel.png" library="omega-layout" width="20"/>
+                            <p:dataExporter type="xls" target="@widgetVar(#{cc.attrs.widget})" fileName="pedido"/>
+                        </h:commandLink>
+                    </div>
+                </f:facet>
+            </c:if>
+            <!--</editor-fold>-->
+        </p:dataTable>
+
+    </composite:implementation>
+</h:body>
+</html>

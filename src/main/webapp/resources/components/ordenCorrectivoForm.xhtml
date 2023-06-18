@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+>
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="entidad" type="com.joyero.app.ordenCorrectivo.OrdenCorrectivo" required="true"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="false"/>
+        <composite:attribute name="readOnly" required="false" default="false"/>
+        <composite:attribute name="widgetVarTbl" required="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.ordencorrectivo" var="ordencorrectivoLbl"/>
+        <f:loadBundle basename="com.joyero.app.fabrica" var="fabricaLbl"/>
+        <f:loadBundle basename="com.joyero.app.maquina" var="maquinaLbl"/>
+        <!--<editor-fold desc="botonera del formulario">-->
+        <p:toolbar>
+            <p:toolbarGroup styleClass="ui-inputgroup">
+                <p:commandButton title="#{txt.nuevo}" icon="fa fa-file-o"
+                                 actionListener="#{cc.attrs.controlador.nuevo()}" process="@this" update="@form"
+                                 resetValues="true"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"/>
+
+                <p:commandButton title="#{cc.attrs.controlador.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                 icon="fa fa-floppy-o" actionListener="#{cc.attrs.controlador.guardar()}"
+                                 process="@form"
+                                 update="@form"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"/>
+
+                <p:commandButton title="#{txt.eliminar}" icon="fa fa-trash-o"
+                                 actionListener="#{cc.attrs.controlador.eliminar()}" process="@this" update="@form"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();">
+                    <p:confirm header="#{txt.confirmacion}" message="#{txt.deseaEliminar}" icon="ui-ordenMantenimientocon-alert"/>
+                </p:commandButton>
+
+                <p:commandButton value="PDF"
+                                 ajax="false"
+                                 actionListener="#{ordenMantenimientoCtl.exportarPdf()}"
+                                 rendered="#{cc.attrs.entidad.id ne null}"
+                                 icon="fa fa-download"
+                                 process="@this">
+                    <p:fileDownload value="#{ordenMantenimientoCtl.descargarPdf()}" />
+                </p:commandButton>
+                <p:commandButton value="Finalizar" icon="fa fa-file-o" rendered="#{cc.attrs.entidad.estadoOrden.codigo.equals('sinFinalizar') or cc.attrs.entidad.id eq null }"
+                                 process="@this" update="@form"
+                                 oncomplete="PF('confirmacionCorrectivoDlg').show()">
+                </p:commandButton>
+
+                <p:commandButton value="Nueva pendiente" icon="fa fa-file-o"
+                                 actionListener="#{cc.attrs.controlador.nuevaPendiente()}" process="@this" update="@form"
+                                 resetValues="true"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"/>
+
+                <p:commandButton value="Recoger pendiente" icon="fa fa-file-o" rendered="#{cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}"
+                                 actionListener="#{cc.attrs.controlador.recogerPendiente()}" process="@this" update="@form"
+                                 resetValues="true"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"/>
+
+            </p:toolbarGroup>
+        </p:toolbar>
+        <!--</editor-fold>-->
+
+        <div class="fieldset ui-fluid">
+            <p:messages autoUpdate="false" showDetail="true" showSummary="false"/>
+            <p:fieldset rendered="#{ordenCorrectivoCtl.ordenMantenimientoPadre!=null}"  legend="Orden original">
+                <h:outputLabel value="ID: " for="@next"></h:outputLabel>
+                <h:outputText value="#{ordenCorrectivoCtl.ordenMantenimientoPadre.id}"></h:outputText><br/>
+                <h:outputLabel value="Fecha: " for="@next"></h:outputLabel>
+                <h:outputText value="#{ordenCorrectivoCtl.ordenMantenimientoPadre.fechaCreacion}">
+                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"  type="localDateTime"></f:convertDateTime>
+                </h:outputText><br/>
+                <h:outputLabel value="Máquina: " for="@next"></h:outputLabel>
+                <h:outputText value="#{ordenCorrectivoCtl.ordenMantenimientoPadre.maquina.descripcion}"></h:outputText><br/>
+            </p:fieldset>
+
+            <!--<editor-fold desc="controles del formulario">-->
+            <p:outputLabel value="#{fabricaLbl.fabrica}"
+                           for="@next"/>
+            <p:selectOneMenu id="fabricaFiltro" widgetVar="fabrica"
+                             value="#{articuloCtl.fabricaFiltro}">
+                <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                <f:selectItems value="#{articuloCtl.fabricas}" var="fabrica"
+                               itemLabel="#{fabrica.fabrica}"
+                               itemValue="#{fabrica.id}"/>
+                <p:ajax event="change" process="@this" update="@widgetVar(zona) @widgetVar(maquina)"></p:ajax>
+            </p:selectOneMenu>
+            <p:message for="@previous"/>
+
+            <p:outputLabel rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" for="@next" value="#{ordencorrectivoLbl.contraIncidencia}" />
+            <p:selectOneRadio rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" id="conAveria" value="#{ordenCorrectivoCtl.conIncidencia}" >
+                <f:selectItem itemLabel="Si" itemValue="s" />
+                <f:selectItem itemLabel="No" itemValue="n" />
+                <p:ajax event="change" listener="#{ordenCorrectivoCtl.verDialogAverias()}"></p:ajax>
+            </p:selectOneRadio>
+
+            <p:outputLabel rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" for="@next" value="#{ordencorrectivoLbl.contraBajada}" />
+            <p:selectOneRadio rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" id="bajadaVelocidad" value="#{ordenCorrectivoCtl.conBajada}" >
+                <f:selectItem itemLabel="Si" itemValue="s" />
+                <f:selectItem itemLabel="No" itemValue="n" />
+                <p:ajax event="change" listener="#{ordenCorrectivoCtl.verDialogoBajadaVelocidad()}"></p:ajax>
+            </p:selectOneRadio>
+
+            <p:outputLabel for="@next" value="#{maquinaLbl['maquinas']}"/>
+            <p:autoComplete id="maquina" widgetVar="maquina" disabled="#{articuloCtl.fabricaFiltro eq null or cc.attrs.entidad.zonaId ne null}" value="#{articuloCtl.maquinaNueva}"
+                            completeMethod="#{articuloCtl.getMaquinasByNombre}"
+                            var="item" itemLabel="#{item.descripcion}" itemValue="#{item}"
+                            forceSelection="true" scrollHeight="200"
+                            converter="#{maquinaConverter}"
+                            minQueryLength="3" dropdown="true">
+                <p:column>
+                    <h:outputText value="#{item.descripcion}"/>
+                </p:column>
+
+                <p:column>
+                    <h:outputText value="#{item.id}"/>
+                </p:column>
+
+                <p:ajax event="itemSelect" update="@this @widgetVar(zona)" process="@this"/>
+            </p:autoComplete>
+
+            <!--<editor-fold desc="selectOneMenu ordenCorrectivo - seccion">-->
+            <p:outputLabel value="Sección"
+                           for="@next"/>
+            <p:selectOneMenu  disabled="#{articuloCtl.fabricaFiltro eq null or articuloCtl.maquinaNueva ne null}" widgetVar="zona"
+                             value="#{cc.attrs.entidad.zonaId}">
+                <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                <f:selectItems value="#{cc.attrs.controlador.zonas}" var="item"
+                               itemLabel="#{item.codigo} #{item.descripcion}"
+                               itemValue="#{item.id}"/>
+                <p:ajax event="itemSelect" update="@this @widgetVar(maquina)" process="@this"/>
+            </p:selectOneMenu>
+            <p:message for="@previous"/>
+            <!--</editor-fold>-->
+            <p:outputLabel value="#{ordencorrectivoLbl.problema}" for="@next"></p:outputLabel><br/>
+            <h:inputTextarea id="probelmaCorrectivo" style="width: 100%" value="#{cc.attrs.entidad.problema}"></h:inputTextarea><br/>
+            
+           <!--<editor-fold desc="selectOneMenu ordenCorrectivo - tipoAveria">-->
+            <p:outputLabel value="Tipo averia"
+                           for="@next"/>
+            <p:selectOneMenu widgetVar="tipoAveria"
+                             value="#{cc.attrs.entidad.tipoAveria}">
+                <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                <f:selectItems value="#{averiaCtl.tiposAveria}" var="item"
+                               itemLabel="#{item.descripcion}"
+                               itemValue="#{item}"/>
+            </p:selectOneMenu>
+            <p:message for="@previous"/>
+
+            <!--<editor-fold desc="number ordenCorrectibo - tiempoParo">-->
+            <p:outputLabel rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" value="Tiempo paro (min.)"
+                           for="@next"/>
+            <p:inputNumber rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" widgetVar="tiempoParo"
+                           id="tiempoParo"
+                           minValue="0"
+                           maxValue="100"
+                           decimalPlaces="2"
+                           value="#{cc.attrs.entidad.tiempoParo}"/>
+            <p:message for="@widgetVar(tiempoParo)"/>
+            <!--</editor-fold>-->
+
+            <p:outputLabel rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" value="Actuación"
+                           for="@next"/><br/>
+            <h:inputTextarea rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" style="width: 100%" id="actuacion" value="#{cc.attrs.entidad.actuacion}"></h:inputTextarea><br/>
+
+
+            <p:outputLabel rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" value="Limpieza"
+                           for="@next"/>
+            <p:selectOneRadio rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" id="limpieza" value="#{cc.attrs.entidad.limpieza}" unselectable="true">
+                <f:selectItem itemLabel="SI" itemValue="S" />
+                <f:selectItem itemLabel="NO" itemValue="N" />
+            </p:selectOneRadio>
+
+            <p:outputLabel rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" value="Herramienta"
+                           for="@next"/>
+            <p:selectOneRadio rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" id="herramienta" value="#{cc.attrs.entidad.herramienta}" unselectable="true">
+                <f:selectItem itemLabel="SI" itemValue="S" />
+                <f:selectItem itemLabel="NO" itemValue="N" />
+            </p:selectOneRadio>
+
+        <!--<editor-fold desc="text ordenCorrectivo - numeroHerramientaIntro">-->
+            <p:outputLabel rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" value="Número de herramienta introducida"
+                           for="@next"/>
+            <p:inputText rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" widgetVar="numeroHerramientaIntro" id="numeroHerramientaIntro"
+                         value="#{cc.attrs.entidad.numeroHerramientaIntro}"
+                         readonly="#{cc.attrs.readOnly}"
+                         styleClass="#{cc.attrs.readOnly ? 'readOnly' : ''}"/>
+            <p:message for="@previous"/>
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="text ordenCorrectivo - numeroHerramientaSaca">-->
+            <p:outputLabel rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" value="Número de herramienta sacada"
+                           for="@next"/>
+            <p:inputText rendered="#{!cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" widgetVar="numeroHerramientaSaca" id="numeroHerramientaSaca"
+                         value="#{cc.attrs.entidad.numeroHerramientaSaca}"
+                         readonly="#{cc.attrs.readOnly}"
+                         styleClass="#{cc.attrs.readOnly ? 'readOnly' : ''}"/>
+            <p:message for="@previous"/>
+            <!--</editor-fold>-->
+            <p:outputLabel rendered="#{cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" value="Prioridad"
+                           for="@next"/>
+            <p:selectOneRadio rendered="#{cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" id="console" value="#{cc.attrs.entidad.prioridad}" unselectable="true">
+                <f:selectItem itemLabel="1" itemValue="1"/>
+                <f:selectItem itemLabel="2" itemValue="2"/>
+                <f:selectItem itemLabel="3" itemValue="3"/>
+            </p:selectOneRadio>
+
+            <p:outputLabel rendered="#{cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" value="Número de pedido"
+                           for="@next"/>
+            <p:inputText rendered="#{cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" widgetVar="numeroPedido" id="numeroPedido"
+                         value="#{cc.attrs.entidad.numeroPedido}"
+                         readonly="#{cc.attrs.readOnly}"
+                         styleClass="#{cc.attrs.readOnly ? 'readOnly' : ''}"/>
+            <p:message for="@previous"/>
+
+            <p:outputLabel rendered="#{cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" value="Vinculado a auditoría"
+                           for="@next"/>
+            <p:selectOneRadio rendered="#{cc.attrs.entidad.estadoOrden.codigo.equals('pendiente')}" id="auditoria" value="#{cc.attrs.entidad.auditoria}">
+                <f:selectItem itemLabel="Si" itemValue="Si"/>
+                <f:selectItem itemLabel="No" itemValue="No"/>
+            </p:selectOneRadio>
+            <p:message for="@previous"/>
+            <!--</editor-fold>-->
+
+        </div>
+    </composite:implementation>
+
+
+</h:body>
+
+</html>

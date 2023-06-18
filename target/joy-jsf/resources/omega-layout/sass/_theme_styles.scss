@@ -1,0 +1,234 @@
+/* Código propio */
+.readOnly {
+  background-color: $topbarBgColor !important;
+}
+/* Add your customizations of theme here */
+/*CAMBIO PARA LA NAVEGACION */
+.ui-breadcrumb {
+  border: none;
+  background: transparent;
+  color: white;
+  font-size: 18px;
+}
+
+.ui-breadcrumb .ui-icon {
+  color: $topbarItemColor;
+}
+
+.ui-breadcrumb .ui-menuitem-link {
+  color: $topbarItemColor;
+  text-decoration: none;
+}
+
+/*FIN CAMBIO*/
+
+//LABEL EN NEGRITA
+label {
+  font-weight: bold;
+}
+
+//--colores botones-
+.ui-button, button.ui-button.ui-state-default, .ui-button.ui-state-default {
+  border: 1px solid $colorBotonBorde;
+  color: #ffffff;
+  background: $colorBoton;
+}
+
+.ui-button, .ui-button span, button.ui-button.ui-state-default span, .ui-button.ui-state-default span {
+  font-weight: bold;
+}
+
+button.ui-button.ui-state-hover, .ui-button.ui-state-hover,
+button.ui-button.ui-state-focus, .ui-button.ui-state-focus {
+  border: 1px solid $colorBotonBorde;
+  background: $colorBotonHover;
+  outline: 0 none;
+}
+
+button.ui-button.ui-state-active, .ui-button.ui-state-active {
+  border: 1px solid $colorBotonBorde;
+  background: $colorBotonActivo;
+}
+
+.ui-paginator .ui-paginator-page.ui-state-active {
+  background: $colorBotonBorde;
+  color: #ffffff;
+  border-color: $colorBotonBorde;
+}
+
+.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight {
+  //background: #A6A6A6;
+  background: $seleccionesColor;
+  border: 1px solid $colorBotonBorde;
+
+  color: #000000;
+}
+
+.ui-state-highlight a, .ui-widget-content .ui-state-highlight a, .ui-widget-header .ui-state-highlight a {
+  color: #363636;
+}
+
+.ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {
+  border-left: 2px solid #EF5350;
+}
+
+.ui-priority-primary, .ui-widget-content .ui-priority-primary, .ui-widget-header .ui-priority-primary {
+  font-weight: bold;
+}
+
+.ui-priority-secondary, .ui-widget-content .ui-priority-secondary, .ui-widget-header .ui-priority-secondary {
+  opacity: .7;
+  filter: Alpha(Opacity=70);
+  font-weight: normal;
+}
+
+.ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled {
+  opacity: .35;
+  filter: Alpha(Opacity=35);
+  background-image: none;
+}
+
+/* ButtonSet */
+/*
+.ui-selectbooleanbutton.ui-button.ui-state-default,
+.ui-selectonebutton .ui-button.ui-state-default,
+.ui-selectmanybutton .ui-button.ui-state-default {
+  border: 1px solid $colorBotonBorde;
+  background: $colorBotonHover;
+  font-weight: normal;
+  color: #555555;
+}
+
+.ui-selectbooleanbutton.ui-button.ui-state-hover, .ui-selectbooleanbutton.ui-button.ui-state-focus,
+.ui-selectonebutton .ui-button.ui-state-hover, .ui-selectonebutton .ui-button.ui-state-focus,
+.ui-selectmanybutton .ui-button.ui-state-hover, .ui-selectmanybutton .ui-button.ui-state-focus {
+  border: 1px solid #c0c0c0;
+  background: #9c1627;
+  font-weight: normal;
+  color: #212121;
+}
+
+.ui-selectbooleanbutton.ui-button.ui-state-active,
+.ui-selectonebutton .ui-button.ui-state-active,
+.ui-selectmanybutton .ui-button.ui-state-active {
+  border: 1px solid #156090;
+  background: #ef6262;
+  color: #ffffff;
+}
+*/
+.ui-datatable th.ui-state-active {
+
+  background: $colorBoton;
+  color: #fff;
+
+}
+
+/*Sombreado seleccionado*/
+.ui-inputfield.ui-state-focus, .ui-widget-content .ui-inputfield.ui-state-focus, .ui-widget-header .ui-inputfield.ui-state-focus {
+  box-shadow: 0 0 5px $colorBotonBorde;
+  -moz-box-shadow: 0 0 5px $colorBotonBorde;
+  -webkit-box-shadow: 0 0 5px $colorBotonBorde;
+}
+
+/*IcheckBox*/
+.ui-chkbox-box.ui-state-active, .ui-chkbox-box.ui-state-focus.ui-state-active, .ui-radiobutton-box.ui-state-active, .ui-radiobutton-box.ui-state-focus.ui-state-active {
+
+  border: 1px solid $colorBotonBorde;
+  background: $seleccionesColor;
+  color: $colorBotonBorde;
+
+}
+
+.ui-datatable .ui-chkbox .ui-chkbox-box {
+
+  color: #ffeff7;
+
+}
+/*Autocompletar*/
+.ui-selectcheckboxmenu .ui-selectcheckboxmenu-token.ui-state-active, .ui-autocomplete .ui-autocomplete-token.ui-state-active, .ui-chips .ui-chips-token.ui-state-active {
+  background: $seleccionesColor;
+  color: $colorBotonBorde;
+}
+
+.ui-g > .dashboard {
+  padding: 0.5em;
+}
+
+fieldset + div {
+  padding-top: 0.5em;
+}
+
+/*Titulos h1 despues de div card*/
+.card h1 {
+  margin: 0 0 0.5em 0;
+  border-bottom: 1px solid #d5d5d5;
+  padding: 0.1em;
+  font-size: 24px;
+  color: $colorBotonBorde;
+}
+
+/*Titulos dialogo*/
+.ui-dialog .ui-dialog-title {
+
+  float: left;
+  margin: .3em 16px .1em 0;
+  font-size: 24px;
+  color: $colorBotonBorde;
+  border-bottom: 1px solid #d5d5d5;
+}
+
+/*fondo tabla rowspansion*/
+.fondo {
+  background-color: $menuColorDegradado2;
+}
+
+.ui-selectbooleanbutton.ui-button.ui-state-default,
+.ui-selectonebutton .ui-button.ui-state-default,
+.ui-selectmanybutton .ui-button.ui-state-default {
+
+  border: 1px solid $colorBotonBorde;
+  background: $seleccionesColor;
+  font-weight: normal;
+  color: $colorBotonBorde;
+
+}
+
+.ui-selectbooleanbutton.ui-button.ui-state-hover,
+.ui-selectonebutton .ui-button.ui-state-hover,
+.ui-selectmanybutton .ui-button.ui-state-hover {
+  border: 1px solid $colorBotonBorde;
+  background: $colorBotonHover;
+  font-weight: normal;
+  color: $colorBotonBorde;
+}
+
+.ui-selectbooleanbutton.ui-button.ui-state-active, .ui-selectonebutton .ui-button.ui-state-active, .ui-selectmanybutton .ui-button.ui-state-active {
+  border: 1px solid $colorBotonBorde;
+  background: $colorBotonActivo;
+  font-weight: normal;
+  color: #ffffff;
+}
+
+//acordeon
+.ui-accordion .ui-accordion-header {
+  background-color: $topbarBgColor;
+  font-style: italic;
+  font-weight: bold;
+  color: $topbarItemColor;
+}
+
+.ui-accordion .ui-accordion-header.ui-state-active {
+  background-color: $topbarBgColor;
+  border: 1px solid $colorBotonBorde;
+  font-style: italic;
+  font-weight: bold;
+  color: $topbarItemColor;
+}
+
+.fieldset {
+  padding: 0.7em;
+  border: 1px solid #d5d5d5;
+  color: #222;
+  line-height: 2em;
+}
+

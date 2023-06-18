@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://java.sun.com/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="widgetVar" required="yes"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="true"/>
+        <composite:attribute name="tablemodel" type="com.joyero.base.jsf.TableModelEntidad" required="true"/>
+        <composite:attribute name="onRowSelect" required="false" method-signature="void listerner()"/>
+        <composite:attribute name="onRowSelectUpdate" required="false"/>
+        <composite:attribute name="onRowSelectComplete" required="false"/>
+        <composite:attribute name="exportable" required="false" default="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.pedido" var="pedidoLbl"/>
+        <p:panel widgetVar="botones" style="border: none">
+        <p:outputLabel rendered="#{cc.attrs.entidad.id ne null}" value="#{pedidoLbl.estado}"
+                       for="@next"/>
+        <p:selectOneMenu widgetVar="estadoTabla"
+                         value="#{cc.attrs.controlador.estadoTabla}">
+            <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+            <f:selectItems value="#{cc.attrs.controlador.estadosPedido}" var="item"
+                           itemLabel="#{item}"
+                           itemValue="#{item}"/>
+            <p:ajax event="change" listener="#{cc.attrs.controlador.filtrarTableModel()}" update="#{cc.attrs.widgetVar}"></p:ajax>
+        </p:selectOneMenu>
+
+        <p:commandButton value="PENDIENTE" rendered="#{cc.attrs.controlador.esOperario ne true}" actionListener="#{cc.attrs.controlador.pasarListaPendiente()}" update="@form"></p:commandButton>
+        <p:commandButton value="VALIDADO" rendered="#{cc.attrs.controlador.esOperario ne true}" actionListener="#{cc.attrs.controlador.pasarListaValidado()}" update="@form"></p:commandButton>
+        <p:commandButton value="PEDIDO" rendered="#{cc.attrs.controlador.esOperario ne true and cc.attrs.controlador.esSupervisor ne true}" actionListener="#{cc.attrs.controlador.pasarListaPedido()}" update="@form @widgetVar(tabFormulario)"></p:commandButton>
+        <p:commandButton value="RECIBIR" rendered="#{cc.attrs.controlador.esSupervisor ne true and cc.attrs.controlador.esOperario ne true and (cc.attrs.controlador.entidad.id eq null or (cc.attrs.controlador.entidad.articuloId ne null and cc.attrs.controlador.entidad.articuloLibre eq null))}" update="@widgetVar(recibirDlg)" oncomplete="PF('recibirDlg').show()" actionListener="#{recepcionPedidoCtl.nuevo()}"></p:commandButton>
+            <p:commandButton value="RECIBIR SIN CÓDIGO" rendered="#{cc.attrs.controlador.esSupervisor ne true and cc.attrs.controlador.esOperario ne true and (cc.attrs.controlador.entidad ne null and cc.attrs.controlador.entidad.articuloId eq null and cc.attrs.controlador.entidad.articuloLibre ne null)}" actionListener="#{cc.attrs.controlador.recibirSinCodigo()}" update="@form"></p:commandButton>
+        <p:commandButton value="ANULADO" rendered="#{cc.attrs.controlador.esSupervisor ne true and cc.attrs.controlador.esOperario ne true}" oncomplete="PF('anularPedidoDlg').show()" update="@form @widgetVar(anularPedidoDlg)"></p:commandButton>
+            <p:commandButton value="#{pedidoLbl.exportar}" ajax="false" icon="pi pi-arrow-down" process="@this">
+                <p:dataExporter type="xls" target="#{cc.attrs.widgetVar}" fileName="pedidos"/>
+            </p:commandButton>
+
+        </p:panel>
+        <p:dataTable widgetVar="#{cc.attrs.widgetVar}"
+                     value="#{cc.attrs.tablemodel}"
+                     id="#{cc.attrs.widgetVar}"
+                     var="pedido"
+                     filterEvent="enter"
+                     reflow="true"
+                     resizableColumns="true"
+                     sortBy="#{pedido.id}"
+                     style="font-size: 12px"
+                     rows="20"
+                     selectionMode="multiple"
+                     selection="#{cc.attrs.controlador.pedidosSeleccionados}"
+                     paginator="true"
+                     paginatorPosition="bottom"
+                     lazy="true"
+                     currentPageReportTemplate="(${txt.registros}: {startRecord} - {endRecord} ${txt.de} {totalRecords}, ${txt.pagina}: {currentPage} ${txt.de} {totalPages})"
+                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}"
+                     rowsPerPageTemplate="10,20,25"
+                     emptyMessage="${txt.tablaVacia}">
+
+            <f:facet name="header">
+
+            </f:facet>
+
+            <!--<editor-fold desc="columnas de la tabla">-->
+            <p:column headerText="ID" rendered="#{cc.attrs.controlador.modoDepuracion}" width="50">
+                <h:outputText value="#{pedido.id}"/>
+            </p:column>
+
+         <p:column width="55" headerText="#{pedidoLbl.pedido}"
+                      filterBy="#{pedido.codigo}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['codigo']}"
+                      sortBy="#{pedido.codigo}">
+                <h:outputText value="#{pedido.codigo}"/>
+            </p:column>
+
+            <p:column  width="160" headerText="#{pedidoLbl.fabrica}"
+                      filterBy="#{pedido.fabrica.fabrica}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['fabrica.fabrica']}"
+                      sortBy="#{pedido.fabrica.fabrica}">
+                <h:outputText value="#{pedido.fabrica.fabrica}"/>
+            </p:column>
+
+            <p:column width="55" headerText="#{pedidoLbl.codigo}"
+                      filterBy="#{pedido.articulo.codigo}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['articulo.codigo']}"
+                      sortBy="#{pedido.articulo.codigo}">
+                <h:outputText value="#{pedido.articulo.codigo}"/>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.descripcion}" width="250"
+                      filterBy="#{pedido.articulo.descripcion}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['articulo.descripcion']}"
+                      sortBy="#{pedido.articulo.descripcion}">
+                <h:outputText value="#{pedido.articulo.descripcion}"/>
+            </p:column>
+
+            <p:column headerText="Artículo libre" width="250"
+                      filterBy="#{pedido.articuloLibre}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['articuloLibre']}"
+                      sortBy="#{pedido.articuloLibre}">
+                <h:outputText value="#{pedido.articuloLibre}"/>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.unidadesPedidas}" width="50"
+                      filterBy="#{pedido.unidadesPedidas}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['unidadesPedidas']}"
+                      sortBy="#{pedido.unidadesPedidas}">
+                <h:outputText rendered="#{pedido.unidadesRecepcionadas ne 0 and pedido.unidadesRecepcionadas ne null}" value="#{pedido.unidadesRecepcionadas}/"/>
+                <h:outputText value="#{pedido.unidadesPedidas}"/>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.unidadesAlmacen}" width="50"
+                      filterBy="#{pedido.unidadesAlmacen}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['unidadesAlmacen']}"
+                      sortBy="#{pedido.unidadesAlmacen}">
+
+                <h:outputText rendered="#{pedido.unidadesAlmacenRecepcionadas ne 0 and pedido.unidadesAlmacenRecepcionadas ne null}" value="#{pedido.unidadesAlmacenRecepcionadas}/"/>
+                <h:outputText value="#{pedido.unidadesAlmacen}"/>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.usuario}" width="120"
+                      filterBy="#{pedido.usuario.nombreCompleto}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['unidadesPedidas.usuario.nombreCompleto']}"
+                      sortBy="#{pedido.usuario.nombreCompleto}">
+                <h:outputText value="#{pedido.usuario.nombreCompleto}"/>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.motivoAnulacion}" width="75"
+                      filterBy="#{pedido.motivoAnulacion}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['motivoAnulacion']}"
+                      sortBy="#{pedido.motivoAnulacion}">
+                <h:outputText value="#{pedido.motivoAnulacion}"/>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.fechaRealizado}" width="65"
+                      filterBy="#{pedido.fechaRealizado}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['fechaRealizado']}"
+                      sortBy="#{pedido.fechaRealizado}">
+                <h:outputText value="#{pedido.fechaRealizado}">
+                    <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.fechaValidado}" width="65"
+                      filterBy="#{pedido.fechaRealizado}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['fechaValidado']}"
+                      sortBy="#{pedido.fechaValidado}">
+                <h:outputText value="#{pedido.fechaValidado}">
+                    <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.fechaPedido}" width="65"
+                      filterBy="#{pedido.fechaPedido}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['fechaPedido']}"
+                      sortBy="#{pedido.fechaPedido}">
+                <h:outputText value="#{pedido.fechaPedido}">
+                    <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="#{pedidoLbl.fechaRecibido}" width="65"
+                      filterBy="#{pedido.fechaRecibido}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['fechaRecibido']}"
+                      sortBy="#{pedido.fechaRecibido}">
+                <h:outputText value="#{pedido.fechaRecibido}">
+                    <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+                </h:outputText>
+            </p:column>
+
+
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="eventos ajax de la tabla">-->
+            <p:ajax event="rowSelect" resetValues="true" update="#{cc.attrs.onRowSelectUpdate}"
+                    listener="#{cc.attrs.onRowSelect}"
+                    oncomplete="#{cc.attrs.onRowSelectComplete}"/>
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="exportaciones de la tabla">-->
+            <c:if test="#{cc.attrs.exportable}">
+                <f:facet name="{Exporters}">
+                    <div style="float:right;padding-top: 5px;">
+                        <h:commandLink>
+                            <p:graphicImage name="images/pdf.png" library="omega-layout" width="20"/>
+                            <p:dataExporter encoding="CP1254" type="pdf" target="@widgetVar(#{cc.attrs.widget})"
+                                            fileName="pedido"/>
+                        </h:commandLink>
+
+                        <h:commandLink>
+                            <p:graphicImage name="images/excel.png" library="omega-layout" width="20"/>
+                            <p:dataExporter type="xls" target="@widgetVar(#{cc.attrs.widget})" fileName="pedido"/>
+                        </h:commandLink>
+                    </div>
+                </f:facet>
+            </c:if>
+            <!--</editor-fold>-->
+        </p:dataTable>
+
+    </composite:implementation>
+</h:body>
+</html>

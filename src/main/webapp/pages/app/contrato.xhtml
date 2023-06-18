@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:app="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:o="http://omnifaces.org/ui">
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <!--Carga de los ficheros de idioma-->
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.app.contrato" var="contratoLbl"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{contratoCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <o:viewParam name="debug" value="#{contratoCtl.modoDepuracion}"/>
+        </f:metadata>
+
+        <p:log rendered="#{contratoCtl.modoDepuracion}"/>
+
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-12 dashboard">
+                <div class="card">
+                    <h1>#{contratoLbl['listado']}</h1>
+                    <h:form>
+                        <p:toolbar>
+                            <p:toolbarGroup styleClass="ui-inputgroup">
+                                <p:commandButton title="#{txt.nuevo}" icon="fa fa-file-o"
+                                                 actionListener="#{contratoCtl.nuevo()}" process="@this"
+                                                 resetValues="true"
+                                                 oncomplete="PF('contratoTbl').filter(); PF('contratoTbl').unselectAllRows();PF('contratoDlg').show()"/>
+
+                                <p:commandButton title="#{contratoCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                                 icon="fa fa-floppy-o" actionListener="#{contratoCtl.guardar()}"
+                                                 process="@form"
+                                                 update="@form"
+                                                 oncomplete="PF('contratoTbl').filter(); PF('contratoTbl').unselectAllRows();"/>
+
+                                <p:commandButton title="#{txt.eliminar}" icon="fa fa-trash-o"
+                                                 actionListener="#{contratoCtl.eliminar()}" process="@this" update="@form"
+                                                 oncomplete="PF('contratoTbl').filter(); PF('contratoTbl').unselectAllRows();">
+                                    <p:confirm header="#{txt.confirmacion}" message="#{txt.deseaEliminar}" icon="ui-icon-alert"/>
+                                </p:commandButton>
+
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <app:contratoTbl tablemodel="#{contratoCtl.tablemodel}"
+                                       widgetVar="contratoTbl"
+                                       controlador="#{contratoCtl}"
+                                       exportable="true"/>
+                    </h:form>
+                </div>
+            </div>
+        </div>
+
+    </ui:define>
+    <ui:define name="dialog">
+        <p:dialog header="Nuevo Contrato" modal="true" width="800" widgetVar="contratoDlg">
+            <h:form prepenId="false" id="contratoForm">
+            <div class="fieldset ui-fluid">
+                <p:messages autoUpdate="false" showDetail="true" showSummary="false"/>
+
+                <p:outputLabel value="#{contratoLbl.codigo}"
+                               for="@next"/>
+                <p:inputText widgetVar="codigoContrato" id="codigoContrato"
+                             value="#{contratoCtl.entidad.codigo}"
+                />
+                <p:message for="codigoContrato" />
+
+                <p:outputLabel value="Mercado" for="@next"></p:outputLabel>
+                <p:selectOneMenu id="mercadoSelector" widgetVar="mercadoSelector"
+                                 value="#{contratoCtl.entidad.mercado}">
+                    <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                    <f:selectItem itemLabel="Mercado Secundario" itemValue="mercadosecundario"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Tipo Contrato" for="@next"></p:outputLabel>
+                <p:selectOneMenu id="tipoContratoSelector" widgetVar="tipoContratoSelector"
+                                 value="#{contratoCtl.entidad.tipocontrato}">
+                    <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                    <f:selectItem itemLabel="Tasacion" itemValue="tasacion"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Cliente" for="@next"></p:outputLabel>
+                <p:selectOneMenu id="clienteSelector" widgetVar="clienteSelector"
+                                 value="#{contratoCtl.idCliente}">
+                    <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                    <f:selectItems value="#{contratoCtl.clientes}" var="cliente"
+                                   itemLabel="#{cliente.nombre} #{cliente.apellidos}"
+                                   itemValue="#{cliente.id}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Lugar de tasacion"></p:outputLabel>
+                <p:inputText value="#{contratoCtl.entidad.lugartasacion}"></p:inputText>
+
+                <p:outputLabel value="Tasador"></p:outputLabel>
+                <p:inputText value="#{contratoCtl.entidad.tasador}"></p:inputText>
+
+                <p:outputLabel value="Firmante"></p:outputLabel>
+                <p:inputText value="#{contratoCtl.entidad.personafirma}"></p:inputText>
+
+                <p:commandButton title="#{contratoCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                 icon="fa fa-floppy-o" actionListener="#{contratoCtl.guardar()}"
+                                 process="@form"
+                                 update="@form"
+                                 oncomplete="PF('contratoTbl').filter(); PF('contratoTbl').unselectAllRows();"/>
+
+            </div>
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
+
+</ui:composition>
+</html>

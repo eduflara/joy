@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:app="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:o="http://omnifaces.org/ui">
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <!--Carga de los ficheros de idioma-->
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.app.movimiento" var="movimientoLbl"/>
+        <f:loadBundle basename="com.joyero.app.bajaarticulo" var="bajaarticuloLbl"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{movimientoCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <!--            <o:viewAction action="#{movimientoCtl.comprobarAcceso}"/>-->
+            <o:viewParam name="debug" value="#{movimientoCtl.modoDepuracion}"/>
+        </f:metadata>
+
+        <p:log rendered="#{movimientoCtl.modoDepuracion}"/>
+
+        <div class="ui-g">
+
+            <div class="ui-g-12 ui-lg-12 dashboard">
+                <div class="card">
+                    <h1>Devoluciones</h1>
+                    <h:form>
+                        <p:panel widgetVar="botones" style="border: none">
+
+                            <p:selectOneMenu id="option" value="#{movimientoCtl.filtroTabla}">
+                                <f:selectItem itemLabel="Sin cofirmar" itemValue="sinConfirmar"/>
+                                <f:selectItem itemLabel="Confirmadas" itemValue="confirmadas"/>
+                                <f:selectItem itemLabel="Eliminadas" itemValue="eliminadas"/>
+                                <f:selectItem itemLabel="Todas" itemValue="todas"/>
+                                <p:ajax event="change" update="@form"
+                                        listener="#{movimientoCtl.filtrarSinConfirmar()}"></p:ajax>
+                            </p:selectOneMenu>
+
+                            <p:commandButton value="Confirmar"  rendered="#{movimientoCtl.esSupervisor ne true and movimientoCtl.esOperario ne true}" disabled="#{movimientoCtl.entidad.id eq null}"
+                                             process="@this" actionListener="#{movimientoCtl.confirmarVarias()}"
+                                             update="@form"></p:commandButton>
+                            <p:commandButton update="@form @widgetVar(nuevaDevolucionDlg)"
+                                             actionListener="#{movimientoCtl.nuevo()}"
+                                             value="Nueva devolucion"
+                                             oncomplete="PF('nuevaDevolucionDlg').show()"></p:commandButton>
+                            <p:commandButton update="@form" actionListener="#{movimientoCtl.eliminarMovimiento()}"
+                                             value="Eliminar"></p:commandButton>
+                            <p:commandButton value="Limpiar filtros" update="@form"
+                                             actionListener="#{movimientoCtl.limpiarFiltrosTabla()}"></p:commandButton>
+                            <p:separator></p:separator>
+                            <p:messages></p:messages>
+                            <h:panelGrid columns="10">
+                                <p:outputLabel value="Fecha desde" for="@next"></p:outputLabel>
+                                <p:calendar value="#{movimientoCtl.fechaDesde}" showOn="button"
+                                            pattern="dd/MM/yyyy HH:mm"
+                                            size="8">
+                                </p:calendar>
+
+                                <p:outputLabel value="Fecha hasta" for="@next"></p:outputLabel>
+                                <p:calendar value="#{movimientoCtl.fechaHasta}" showOn="button"
+                                            pattern="dd/MM/yyyy HH:mm"
+                                            size="8">
+                                </p:calendar>
+                                <p:separator></p:separator>
+                                <p:outputLabel value="Fecha desde confirmada" for="@next"></p:outputLabel>
+                                <p:calendar value="#{movimientoCtl.fechaDesdeConfirmada}" showOn="button"
+                                            pattern="dd/MM/yyyy HH:mm"
+                                            size="8">
+                                </p:calendar>
+
+                                <p:outputLabel value="Fecha hasta confirmada" for="@next"></p:outputLabel>
+                                <p:calendar value="#{movimientoCtl.fechaHastaConfirmada}" showOn="button"
+                                            pattern="dd/MM/yyyy HH:mm"
+                                            size="8">
+                                </p:calendar>
+                                <p:commandButton update="@form" value="Filtrar fechas"
+                                                 actionListener="#{movimientoCtl.filtrarSinConfirmar()}"></p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:separator></p:separator>
+                        <app:movimientoMultipleTbl tablemodel="#{movimientoCtl.tablemodel}"
+                                                   widgetVar="movimientoTbl"
+                                                   controlador="#{movimientoCtl}"
+                                                   onRowSelect="#{movimientoCtl.cargarMovimientos()}"
+                                                   onRowSelectUpdate="@widgetVar(botones)"
+                                                   exportable="true"/>
+                    </h:form>
+                </div>
+            </div>
+        </div>
+    </ui:define>
+    <ui:define name="dialog">
+        <p:dialog width="30%" modal="true" widgetVar="nuevaDevolucionDlg" header="Crear devolución">
+            <h:form>
+                <p:panelGrid columns="3" styleClass="ui-noborder">
+                    <p:outputLabel value="#{bajaarticuloLbl.articulo}"
+                                   for="@next"/>
+                    <h:outputText rendered="#{movimientoCtl.articulo ne null}"
+                                  value=" #{movimientoCtl.articulo.codigo} #{movimientoCtl.articulo.descripcion}"></h:outputText>
+                    <p:commandButton icon="fa fa-search" oncomplete="PF('articulosDlg').show()"
+                                     update="@widgetVar(articulosDlg)"
+                                     actionListener="#{movimientoCtl.limpiarFiltrosArticulos()}"></p:commandButton>
+
+                    <h:outputLabel value="Cantidad"></h:outputLabel>
+                    <p:inputNumber value="#{movimientoCtl.entidad.cantidad}">
+
+                    </p:inputNumber>
+                    <p:commandButton update="@widgetVar(bajaArticuloTbl) @widgetVar(movimientoTbl)"
+                                     oncomplete="PF('nuevaDevolucionDlg').hide()"
+                                     value="#{bajaarticuloLbl.devolver}"
+                                     actionListener="#{movimientoCtl.guardar}"></p:commandButton>
+                </p:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog header="Artículos" modal="true" widgetVar="articulosDlg">
+            <app:articuloTbl tablemodel="#{movimientoCtl.articuloTbl}"
+                             widgetVar="ArticuloTbl"
+                             controlador="#{movimientoCtl}"
+                             onRowSelect="#{movimientoCtl.cargarSeleccionArticulo()}"
+                             onRowSelectUpdate="@widgetVar(nuevaDevolucionDlg)"
+                             onRowSelectComplete="PF('articulosDlg').hide();PF('nuevaDevolucionDlg').show()"
+                             exportable="true"/>
+        </p:dialog>
+    </ui:define>
+</ui:composition>
+</html>

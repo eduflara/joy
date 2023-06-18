@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:app="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:o="http://omnifaces.org/ui">
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+
+    <!--Carga de los ficheros de idioma-->
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.app.articulo" var="articuloLbl"/>
+        <f:loadBundle basename="com.joyero.app.maquina" var="maquinaLbl"/>
+        <f:loadBundle basename="com.joyero.app.fabrica" var="fabricaLbl"/>
+        <f:loadBundle basename="com.joyero.app.bajaarticulo" var="bajaarticuloLbl"/>
+        <f:loadBundle basename="com.joyero.app.documentoarticulo" var="documentoarticuloLbl"/>
+        <f:loadBundle basename="com.joyero.app.ordencorrectivo" var="ordencorrectivoLbl"/>
+        <f:loadBundle basename="com.joyero.app.pedido" var="pedidoLbl"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{articuloCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <!--            <o:viewAction action="#{articuloCtl.comprobarAcceso}"/>-->
+            <o:viewParam name="debug" value="#{articuloCtl.modoDepuracion}"/>
+        </f:metadata>
+
+        <p:log rendered="#{articuloCtl.modoDepuracion}"/>
+
+        <div class="ui-g">
+            <div style="float: left" class="ui-g-12 ui-lg-4 dashboard">
+                <div class="card">
+                    <h1>#{articuloLbl['formulario']}</h1>
+                    <h:form prepenId="false" id="articuloForm">
+                        <div class="fieldset">
+                            <app:articuloForm entidad="#{articuloCtl.entidad}"
+                                              controlador="#{articuloCtl}"
+                                              widgetVarTbl="articuloTbl"
+                                              unidades="#{articuloCtl.unidades}"/>
+                        </div>
+                    </h:form>
+                </div>
+            </div>
+
+            <div style="float: left" class="ui-g-12 ui-lg-8 dashboard">
+                <div class="card">
+                    <h1>#{articuloLbl['listado']}</h1>
+
+                    <p:selectBooleanButton value="#{articuloCtl.verSinConfirmar}" onLabel="Sin confirmar"
+                                           offLabel="Todos">
+                        <p:ajax update=":formTablaSinConfirmar, :formTablaTodos"/>
+                    </p:selectBooleanButton>
+                    <p:commandButton actionListener="#{articuloCtl.limpiarFiltros()}" value="Limpiar filtros"
+                                     update="@widgetVar(articuloTbl) :articuloForm"></p:commandButton>
+
+                    <h:form id="formTablaTodos">
+                        <app:articuloTbl rendered="#{articuloCtl.verSinConfirmar eq false}"
+                                         tablemodel="#{articuloCtl.tablemodel}"
+                                         widgetVar="articuloTbl"
+                                         controlador="#{articuloCtl}"
+                                         onRowSelect="#{articuloCtl.seleccionarArticulo()}"
+                                         onRowSelectUpdate=":articuloForm @widgetVar(avanzadoDlg) @widgetVar(documentoArticuloTbl) @widgetVar(articuloUbicacionTbl)"
+                                         exportable="true"/>
+                    </h:form>
+
+                    <h:form id="formTablaSinConfirmar">
+                        <app:articuloSinConfirmarTbl rendered="#{articuloCtl.verSinConfirmar eq true}"
+                                                     tablemodel="#{articuloCtl.articulosSinConfirmar}"
+                                                     widgetVar="articuloSinconfirmarTbl"
+                                                     controlador="#{articuloCtl}"
+                                                     onRowSelect="#{articuloCtl.seleccionarArticuloSinConfrimar()}"
+                                                     onRowSelectUpdate=":articuloForm @widgetVar(avanzadoDlg) @widgetVar(documentoArticuloTbl)"
+                                                     exportable="true"/>
+                    </h:form>
+                </div>
+            </div>
+
+        </div>
+    </ui:define>
+
+    <ui:define name="dialog">
+
+        <p:dialog widgetVar="ubicacionDlg">
+            <app:ubicacionTbl widgetVar="ubicacionTbl" tablemodel="#{articuloCtl.ubicacionTbl}"
+                              controlador="#{articuloCtl}" onRowSelect="#{articuloCtl.onRowSelectUbicacion()}"/>
+        </p:dialog>
+
+
+        <p:dialog header="#{maquinaLbl.maquinas}" width="80%" modal="true" widgetVar="maquinaDlg">
+            <div style="float: left" class="ui-g-12 ui-lg-4 dashboard">
+                <h:form prepenId="false" id="maquinaForm">
+                    <div class="fieldset">
+                        <app:maquinaForm entidad="#{cc.attrs.controlador.maquinaNueva}" widgetVarTbl="maquinasTbl"
+                                         controlador="#{articuloCtl}"></app:maquinaForm>
+                    </div>
+                </h:form>
+            </div>
+            <div style="float: left" class="ui-g-12 ui-lg-8 dashboard">
+                <h:form prepenId="false" id="maquinaTblForm">
+                    <div class="fieldset">
+                        <app:maquinaTbl widgetVar="maquinasTbl" controlador="#{articuloCtl}"
+                                        onRowSelect="#{articuloCtl.onRowSelectUbicacion()}"/>
+                    </div>
+                </h:form>
+            </div>
+        </p:dialog>
+
+        <p:dialog header="#{articuloLbl.informacionAvanzada}" id="avanzadoDlg" width="80%" modal="true"
+                  widgetVar="avanzadoDlg">
+            <p:tabView>
+                <p:tab title="#{documentoarticuloLbl.documentos}">
+                    <div class="ui-g">
+                        <div style="float: left" class="ui-g-12 ui-lg-6 dashboard">
+
+                            <h:form>
+                                <p:outputPanel rendered="#{articuloCtl.entidad.id ne null}"
+                                               autoUpdate="true">
+                                    <p:toolbar>
+                                        <p:toolbarGroup align="left">
+                                            <p:toolbarGroup align="left">
+                                                <p:commandButton value="#{txt.nuevo}" icon="ui-icon-document"
+                                                                 actionListener="#{articuloCtl.nuevoDocumentoArticulo}"
+                                                                 process="@this" update="@widgetVar(datosDocumento)"
+                                                                 oncomplete="PF('documentoArticuloTbl').filter(); PF('documentoArticuloTbl').unselectAllRows();"/>
+
+                                                <p:commandButton value="#{txt.eliminar}" icon="ui-icon-trash"
+                                                                 actionListener="#{articuloCtl.eliminarDocumentoArticulo}"
+                                                                 process="@this"
+                                                                 widgetVar="btnEliminarDoc"
+                                                                 update="@widgetVar(datosDocumento)"
+                                                                 oncomplete="PF('documentoArticuloTbl').filter(); PF('documentoArticuloTbl').unselectAllRows();">
+                                                </p:commandButton>
+                                            </p:toolbarGroup>
+                                        </p:toolbarGroup>
+                                    </p:toolbar>
+                                </p:outputPanel>
+
+                                <p:fieldset rendered="#{articuloCtl.entidad.id ne null}"
+                                            widgetVar="datosDocumento">
+                                    <p:messages showDetail="true" showSummary="false"/>
+
+                                    <h:panelGroup styleClass="fieldRow">
+                                        <h:panelGroup styleClass="field">
+                                            <p:messages for="@next" showDetail="true" showSummary="false"/>
+                                            <p:selectBooleanCheckbox itemLabel="Manual" value="#{articuloCtl.esManual}">
+                                                <p:ajax event="change" update="@this"></p:ajax>
+                                            </p:selectBooleanCheckbox>
+                                            <p:fileUpload id="documentoArticulo" widgetVar="fileUploadArticulo"
+                                                          listener="#{articuloCtl.handleFileUploadDocumentoArticulo}"
+                                                          label="#{articuloLbl['examinar']}"
+                                                          cancelLabel="#{txt.cancelar}"
+                                                          uploadLabel="#{txt.cargar}"
+                                                          mode="advanced" dragDropSupport="true"
+                                                          allowTypes="/(\.|\/)(doc|docx|pdf|jpg|txt|xls|xlsx)$/"
+                                                          auto="true"
+                                                          sizeLimit="100000000"
+                                                          rendered="#{articuloCtl.documentoArticulo.id eq null}"
+                                                          update="@widgetVar(datosDocumento) @widgetVar(documentoArticuloTbl)"
+                                                          oncomplete="PF('documentoArticuloTbl').filter(); PF('documentoArticuloTbl').unselectAllRows();"/>
+
+                                            <p:commandButton id="btnDescarga" value="Descargar"
+                                                             icon="ui-icon-arrowthickstop-1-s" ajax="false"
+                                                             process="@this"
+                                                             rendered="#{articuloCtl.documentoArticulo.id ne null}">
+
+                                                <p:fileDownload
+                                                        value="#{articuloCtl.descargarDocumentoArticulo()}"/>
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
+
+                                </p:fieldset>
+
+                            </h:form>
+                        </div>
+                        <div style="float: left" class="ui-g-12 ui-lg-6 dashboard">
+                            <h:form>
+                                <p:messages></p:messages>
+                                <app:documentoArticuloTbl tablemodel="#{articuloCtl.documentoArticuloTbl}"
+                                                          widgetVar="documentoArticuloTbl"
+                                                          controlador="#{articuloCtl}"
+                                                          onRowSelect="#{articuloCtl.seleccionarDocumentoArticulo()}"
+                                                          onRowSelectUpdate="@widgetVar(datosDocumento) @widgetVar(btnEliminarDoc)"
+                                                          exportable="true"/>
+                            </h:form>
+                        </div>
+                    </div>
+                </p:tab>
+
+                <p:tab title="#{ordencorrectivoLbl.consumos}">
+                    <div class="ui-g">
+
+                        <app:bajaArticuloTbl tablemodel="#{articuloCtl.bajaArticuloTbl}"
+                                             widgetVar="bajaArticuloTbl"
+                                             controlador="#{articuloCtl}"
+                                             exportable="true"/>
+
+
+                    </div>
+                </p:tab>
+
+                <p:tab title="#{ordencorrectivoLbl.devoluciones}">
+                    <div class="ui-g">
+
+                        <app:movimientoTbl tablemodel="#{articuloCtl.devolucionTbl}"
+                                           widgetVar="movimientoTbl"
+                                           controlador="#{articuloCtl}"
+                                           exportable="true"/>
+
+
+                    </div>
+                </p:tab>
+
+                <p:tab title="#{pedidoLbl.pedidos}">
+                    <h:form>
+                        <app:pedidoTbl tablemodel="#{articuloCtl.pedidoTbl}"
+                                       widgetVar="pedidoTbl"
+                                       controlador="#{pedidoCtl}"
+                                       exportable="true"/>
+                    </h:form>
+                </p:tab>
+
+                <p:tab title="Ubicaciones">
+                    <app:articuloUbicacionTbl widgetVar="articuloUbicacionTbl"
+                                              tablemodel="#{articuloCtl.articuloUbicacionTbl}"
+                                              controlador="#{articuloCtl}"
+                                              onRowSelect="#{articuloCtl.onRowSelectUbicacion()}"/>
+                </p:tab>
+                <p:tab title="Coste proveedores">
+                    <div class="ui-g">
+                        <div style="float: left" class="ui-g-12 ui-lg-4 dashboard">
+                            <div class="card">
+                                <h1>#{articuloLbl['formulario']}</h1>
+                                <h:form prepenId="false" id="proveedorCosteForm">
+                                    <p:fieldset style="border: none;padding: 0" widgetVar="camposProveedorCoste">
+                                        <app:proveedorCosteForm entidad="#{proveedorCosteCtl.entidad}"
+                                                                controlador="#{proveedorCosteCtl}"
+                                                                widgetVarTbl="proveedorCosteTbl"/>
+                                    </p:fieldset>
+                                </h:form>
+                            </div>
+                        </div>
+
+                        <div style="float: left" class="ui-g-12 ui-lg-8 dashboard">
+                            <div class="card">
+                                <h1>#{articuloLbl['listado']}</h1>
+                                <h:form id="formTablaProveedorCoste">
+                                    <app:proveedorCosteTbl tablemodel="#{proveedorCosteCtl.tablemodel}"
+                                                           widgetVar="proveedorCosteTbl"
+                                                           controlador="#{proveedorCosteCtl}"
+                                                           onRowSelect="#{proveedorCosteCtl.cargarSeleccion()}"
+                                                           onRowSelectUpdate="@widgetVar(camposProveedorCoste)"
+                                                           exportable="true"/>
+                                </h:form>
+                            </div>
+                        </div>
+
+                    </div>
+                </p:tab>
+            </p:tabView>
+        </p:dialog>
+
+        <p:dialog header="Baja #{articuloCtl.entidad.codigo} #{articuloCtl.entidad.descripcion}"
+                  width="30%" modal="true" widgetVar="retiradaDlg">
+            <h:form>
+                <p:outputLabel value="#{fabricaLbl.fabrica}"
+                               for="@next"/>
+                <p:selectOneMenu id="fabricaFiltro" widgetVar="fabrica"
+                                 value="#{articuloCtl.fabricaFiltro}">
+                    <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                    <f:selectItems value="#{articuloCtl.fabricas}" var="fabrica"
+                                   itemLabel="#{fabrica.fabrica}"
+                                   itemValue="#{fabrica.id}"/>
+                    <p:ajax event="change" process="@this" update="@widgetVar(maquina) @widgetVar(zona)"></p:ajax>
+                </p:selectOneMenu>
+                <p:message for="@previous"/>
+
+                <p:outputLabel for="@next" value="#{maquinaLbl['maquinas']}"/>
+                <p:autoComplete id="maquina" widgetVar="maquina"
+                                value="#{articuloCtl.maquina}"
+                                completeMethod="#{articuloCtl.getMaquinasByNombre}"
+                                var="item" itemLabel="#{item.descripcion}" itemValue="#{item}"
+                                forceSelection="true" scrollHeight="200"
+                                converter="#{maquinaConverter}"
+                                minQueryLength="3" dropdown="true">
+                    <p:column>
+                        <h:outputText value="#{item.descripcion}"/>
+                    </p:column>
+
+                    <p:column>
+                        <h:outputText value="#{item.id}"/>
+                    </p:column>
+
+                    <p:ajax event="itemSelect" update="@this" process="@this"/>
+                </p:autoComplete>
+                <p:message for="@previous"/>
+
+                <p:outputLabel value="Sección"
+                               for="@next"/>
+                <p:selectOneMenu widgetVar="zona"
+                                 value="#{articuloCtl.zona}">
+                    <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                    <f:selectItems value="#{articuloCtl.zonas}" var="item"
+                                   itemLabel="#{item.codigo} #{item.descripcion}"
+                                   itemValue="#{item.id}"/>
+                    <p:ajax event="itemSelect" update="@this @widgetVar(maquina)" process="@this"/>
+                </p:selectOneMenu>
+                <p:message for="@previous"/>
+
+                <h:outputLabel value="Cantidad"></h:outputLabel>
+                <p:inputNumber value="#{articuloCtl.bajaArticulo.cantidad}">
+
+                </p:inputNumber>
+                <p:message for="@previous"/>
+                <h:outputLabel value="Regular"></h:outputLabel>
+                <p:selectBooleanCheckbox value="#{articuloCtl.bajaArticulo.regularizacion}"/>
+
+                <p:message for="@previous"/>
+                <p:commandButton update="@widgetVar(articuloTbl) :articuloForm" oncomplete="PF('retiradaDlg').hide()"
+                                 value="#{bajaarticuloLbl.retirar}"
+                                 actionListener="#{articuloCtl.guardarBaja()}"></p:commandButton>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Devolución #{articuloCtl.entidad.codigo} #{articuloCtl.entidad.descripcion}"
+                  width="30%" modal="true" widgetVar="devolucionDlg">
+            <h:form>
+                <h:outputLabel value="Cantidad"></h:outputLabel>
+                <p:inputNumber value="#{articuloCtl.devolucion.cantidad}">
+
+                </p:inputNumber>
+                <p:commandButton update="@widgetVar(articuloTbl) :articuloForm" oncomplete="PF('devolucionDlg').hide()"
+                                 value="#{bajaarticuloLbl.devolver}"
+                                 actionListener="#{articuloCtl.guardarDevolucion()}"></p:commandButton>
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
+
+</ui:composition>
+</html>

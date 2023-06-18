@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:app="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:o="http://omnifaces.org/ui">
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <!--Carga de los ficheros de idioma-->
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.app.bajaarticulo" var="bajaarticuloLbl"/>
+        <f:loadBundle basename="com.joyero.app.movimiento" var="movimientoLbl"/>
+        <f:loadBundle basename="com.joyero.app.maquina" var="maquinaLbl"/>
+        <f:loadBundle basename="com.joyero.app.fabrica" var="fabricaLbl"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{bajaArticuloCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <!--            <o:viewAction action="#{bajaArticuloCtl.comprobarAcceso}"/>-->
+            <o:viewParam name="debug" value="#{bajaArticuloCtl.modoDepuracion}"/>
+        </f:metadata>
+
+        <p:log rendered="#{bajaArticuloCtl.modoDepuracion}"/>
+
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-12 dashboard">
+                <div class="card">
+                    <h1>#{bajaarticuloLbl['bajas']}</h1>
+                    <h:form prepenId="false" id="bajaArticuloForm">
+                        <p:panel widgetVar="botones" style="border: none">
+
+                            <p:selectOneMenu id="option" value="#{bajaArticuloCtl.filtroTabla}">
+                                <f:selectItem itemLabel="Sin cofirmar" itemValue="sinConfirmar"/>
+                                <f:selectItem itemLabel="Confirmadas" itemValue="confirmadas"/>
+                                <f:selectItem itemLabel="Eliminadas" itemValue="eliminadas"/>
+                                <f:selectItem itemLabel="Todas" itemValue="todas"/>
+                                <p:ajax event="change" update="@form"
+                                        listener="#{bajaArticuloCtl.filtrarSinConfirmar()}"></p:ajax>
+                            </p:selectOneMenu>
+
+                            <p:commandButton value="Confirmar" rendered="#{bajaArticuloCtl.esSupervisor ne true and bajaArticuloCtl.esOperario ne true}" disabled="#{bajaArticuloCtl.entidad.id eq null}"
+                                             process="@this" actionListener="#{bajaArticuloCtl.confirmarVarias()}"
+                                             update="@form"></p:commandButton>
+                            <p:commandButton update="@form" actionListener="#{bajaArticuloCtl.eliminarBaja()}"
+                                             value="Eliminar"></p:commandButton>
+                            <p:commandButton update="@widgetVar(retiradaDlg)"
+                                             actionListener="#{bajaArticuloCtl.nuevo()}"
+                                             value="Nueva baja" oncomplete="PF('retiradaDlg').show()"></p:commandButton>
+                            <p:commandButton value="Limpiar filtros" update="@form"
+                                             actionListener="#{bajaArticuloCtl.limpiarFiltrosTabla()}"></p:commandButton>
+                            <p:separator></p:separator>
+                            <p:messages></p:messages>
+                            <h:panelGrid columns="10">
+                            <p:outputLabel value="Fecha desde" for="@next"></p:outputLabel>
+                            <p:calendar value="#{bajaArticuloCtl.fechaDesde}" showOn="button" pattern="dd/MM/yyyy HH:mm"
+                                        size="8">
+                            </p:calendar>
+
+                            <p:outputLabel value="Fecha hasta" for="@next"></p:outputLabel>
+                            <p:calendar value="#{bajaArticuloCtl.fechaHasta}" showOn="button" pattern="dd/MM/yyyy HH:mm"
+                                        size="8">
+                            </p:calendar>
+                            <p:separator/>
+                            <p:outputLabel value="Fecha desde confirmada" for="@next"></p:outputLabel>
+                            <p:calendar value="#{bajaArticuloCtl.fechaDesdeConfirmada}" showOn="button" pattern="dd/MM/yyyy HH:mm"
+                                        size="8">
+                            </p:calendar>
+
+                            <p:outputLabel value="Fecha hasta confirmada" for="@next"></p:outputLabel>
+                            <p:calendar value="#{bajaArticuloCtl.fechaHastaConfirmada}" showOn="button" pattern="dd/MM/yyyy HH:mm"
+                                        size="8">
+                            </p:calendar>
+                            <p:commandButton update="@form" value="Filtrar fechas"
+                                             actionListener="#{bajaArticuloCtl.filtrarSinConfirmar()}"></p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:separator></p:separator>
+                        <app:bajaArticuloMultipleTbl tablemodel="#{bajaArticuloCtl.tablemodel}"
+                                                     widgetVar="bajaArticuloTbl"
+                                                     controlador="#{bajaArticuloCtl}"
+                                                     onRowSelect="#{bajaArticuloCtl.cargarMovimientosBaja()}"
+                                                     onRowSelectUpdate="@widgetVar(retiradaDlg) @widgetVar(botones)"
+                                                     exportable="true"/>
+
+                        <!--                        <app:bajaArticuloMultipleSinConfirmarTbl rendered="#{bajaArticuloCtl.verSinConfirmar eq true}" tablemodel="#{bajaArticuloCtl.bajasSinConfirmar}"-->
+                        <!--                                                     widgetVar="bajaArticuloSinConfirmarTbl"-->
+                        <!--                                                     controlador="#{bajaArticuloCtl}"-->
+                        <!--                                                     onRowSelect="#{bajaArticuloCtl.cargarMovimientosBaja()}"-->
+                        <!--                                                     onRowSelectUpdate=":formTablaMovimientos @widgetVar(retiradaDlg) @widgetVar(botones)"-->
+                        <!--                                                     exportable="true"/>-->
+                    </h:form>
+                </div>
+            </div>
+
+            <!--            <div class="ui-g-12 ui-lg-12 dashboard">-->
+            <!--                <div class="card">-->
+            <!--                    <h1>#{movimientoLbl['movimientos']}</h1>-->
+            <!--                    <h:form id="formTablaMovimientos">-->
+            <!--                        <p:panel style="border: none">-->
+            <!--                        <p:commandButton value="Confirmar" update="@widgetVar(movimientoTbl) :bajaArticuloForm" actionListener="#{bajaArticuloCtl.confirmarMovimiento()}"></p:commandButton>-->
+            <!--                        </p:panel>-->
+            <!--                        <app:movimientoTbl tablemodel="#{movimientoCtl.tablemodel}"-->
+            <!--                                           widgetVar="movimientoTbl"-->
+            <!--                                           controlador="#{movimientoCtl}"-->
+            <!--                                           rendered="#{bajaArticuloCtl.entidad.id ne null}"-->
+            <!--                                           onRowSelect="#{movimientoCtl.cargarSeleccion}"-->
+            <!--                                           exportable="true"/>-->
+            <!--                    </h:form>-->
+            <!--                </div>-->
+            <!--            </div>-->
+        </div>
+    </ui:define>
+    <ui:define name="dialog">
+        <p:dialog header="Crear baja"
+                  width="50%" modal="true" widgetVar="retiradaDlg">
+            <h:form>
+                <p:panelGrid styleClass="ui-noborder" columns="3">
+                    <p:outputLabel value="#{bajaarticuloLbl.articulo}"
+                                   for="@next"/>
+                    <h:outputText rendered="#{bajaArticuloCtl.articulo ne null}"
+                                  value=" #{bajaArticuloCtl.articulo.codigo} #{bajaArticuloCtl.articulo.descripcion}"></h:outputText>
+                    <p:commandButton icon="fa fa-search" actionListener="#{bajaArticuloCtl.limpiarFiltrosArticulo}" update="@widgetVar(articulosDlg)"  oncomplete="PF('articulosDlg').show()"></p:commandButton>
+                    <p:outputLabel value="#{fabricaLbl.fabrica}"
+                                   for="@next"/>
+                    <p:selectOneMenu id="fabricaFiltro" widgetVar="fabrica"
+                                     value="#{bajaArticuloCtl.fabricaFiltro}">
+                        <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                        <f:selectItems value="#{bajaArticuloCtl.fabricas}" var="fabrica"
+                                       itemLabel="#{fabrica.fabrica}"
+                                       itemValue="#{fabrica.id}"/>
+                        <p:ajax event="change" process="@this" update="@widgetVar(maquina) @widgetVar(zona)"></p:ajax>
+                    </p:selectOneMenu>
+                    <p:message for="@previous"/>
+
+                    <p:outputLabel for="@next" value="#{maquinaLbl['maquinas']}"/>
+                    <p:autoComplete id="maquina" widgetVar="maquina"
+                                    value="#{bajaArticuloCtl.maquina}"
+                                    completeMethod="#{bajaArticuloCtl.getMaquinasByNombre}"
+                                    var="item" itemLabel="#{item.descripcion}" itemValue="#{item}"
+                                    forceSelection="true" scrollHeight="200"
+                                    converter="#{maquinaConverter}"
+                                    minQueryLength="3" dropdown="true">
+                        <p:column>
+                            <h:outputText value="#{item.descripcion}"/>
+                        </p:column>
+
+                        <p:column>
+                            <h:outputText value="#{item.id}"/>
+                        </p:column>
+
+                        <p:ajax event="itemSelect" update="@this" process="@this"/>
+                    </p:autoComplete>
+                    <p:message for="@previous"/>
+
+                    <p:outputLabel value="Sección"
+                                   for="@next"/>
+                    <p:selectOneMenu   widgetVar="zona"
+                                       value="#{bajaArticuloCtl.zona}">
+                        <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                        <f:selectItems value="#{bajaArticuloCtl.zonas}" var="item"
+                                       itemLabel="#{item.codigo} #{item.descripcion}"
+                                       itemValue="#{item.id}"/>
+                        <p:ajax event="itemSelect" update="@this @widgetVar(maquina)" process="@this"/>
+                    </p:selectOneMenu>
+                    <p:message for="@previous"/>
+
+                    <h:outputLabel value="Cantidad"></h:outputLabel>
+                    <p:inputNumber value="#{bajaArticuloCtl.entidad.cantidad}">
+
+                    </p:inputNumber>
+                    <p:message for="@previous"/>
+                    <h:outputLabel rendered="#{bajaArticuloCtl.esOperario eq false and bajaArticuloCtl.esSupervisor eq false }" value="Regular"></h:outputLabel>
+                    <p:selectBooleanCheckbox rendered="#{bajaArticuloCtl.esOperario eq false and bajaArticuloCtl.esSupervisor eq false }" value="#{bajaArticuloCtl.entidad.regularizacion}"/>
+                    <p:message for="@previous"/>
+                    <h:outputLabel value="Realizar pedido"></h:outputLabel>
+                    <p:selectBooleanCheckbox style="width: 10xp" value="#{bajaArticuloCtl.realizarPedido}">
+                        <p:ajax event="change" update="@form"></p:ajax>
+                    </p:selectBooleanCheckbox>
+                    <p:message for="@previous"/>
+                </p:panelGrid>
+                    <p:panel rendered="#{bajaArticuloCtl.realizarPedido eq true}" style="border: 0px;float:left">
+                        <h:outputLabel value="Unidades para montar"></h:outputLabel>
+                        <p:inputNumber value="#{bajaArticuloCtl.unidadesPedido}"></p:inputNumber>
+                    </p:panel>
+                    <p:panel rendered="#{bajaArticuloCtl.realizarPedido eq true}" style="border: 0px;float:left">
+                        <h:outputLabel value="Unidades para almacén"></h:outputLabel>
+                        <p:inputNumber value="#{bajaArticuloCtl.unidadesPedidoAlmacen}"></p:inputNumber>
+                    </p:panel>
+
+                <p:commandButton update="@widgetVar(bajaArticuloTbl) @widgetVar(articulosDlg)"
+                                 oncomplete="PF('retiradaDlg').hide()" value="#{bajaarticuloLbl.retirar}"
+                                 actionListener="#{bajaArticuloCtl.guardar}"></p:commandButton>
+            </h:form>
+        </p:dialog>
+        <p:dialog header="Artículos" modal="true" widgetVar="articulosDlg">
+            <app:articuloTbl tablemodel="#{bajaArticuloCtl.articuloTbl}"
+                             widgetVar="ArticuloTbl"
+                             controlador="#{bajaArticuloCtl}"
+                             onRowSelect="#{bajaArticuloCtl.seleccionarArticulo()}"
+                             onRowSelectUpdate="@widgetVar(retiradaDlg)"
+                             onRowSelectComplete="PF('articulosDlg').hide();PF('retiradaDlg').show()"
+                             exportable="true"/>
+        </p:dialog>
+
+    </ui:define>
+</ui:composition>
+</html>

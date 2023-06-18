@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:app="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:o="http://omnifaces.org/ui">
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <!--Carga de los ficheros de idioma-->
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.app.pedido" var="pedidoLbl"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{pedidoCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <o:viewParam name="debug" value="#{pedidoCtl.modoDepuracion}"/>
+        </f:metadata>
+
+        <p:log rendered="#{pedidoCtl.modoDepuracion}"/>
+
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-12 dashboard">
+                <div class="card">
+                    <h1>#{pedidoLbl['listado']}</h1>
+                    <h:form>
+                        <app:pedidoTbl tablemodel="#{pedidoCtl.tablemodel}"
+                                       widgetVar="pedidoTbl"
+                                       controlador="#{pe.idoCtl}"
+                                       onRowSelect="#{pedidoCtl.cargarPedidos()}"
+                                       onRowSelectUpdate=":pedidoFormTab @form"
+                                       exportable="true"/>
+                    </h:form>
+                </div>
+            </div>
+            <div class="ui-g-12 ui-lg-12 dashboard">
+                <h1>#{pedidoLbl['formulario']}</h1>
+                <div class="card">
+                    <p:tabView widgetVar="tabFormulario" id="pedidoFormTab">
+                        <p:tab title="#{pedidoLbl['ficha']}">
+                            <h:form prepenId="false" id="pedidoForm">
+                                <app:pedidoForm entidad="#{pedidoCtl.entidad}"
+                                                readOnly="#{pedidoCtl.entidad ne null and (pedidoCtl.entidad.estadoPedido eq 'RECIBIDO' or pedidoCtl.entidad.estadoPedido eq 'ANULADO')}"
+                                                controlador="#{pedidoCtl}"
+                                                widgetVarTbl="pedidoTbl"/>
+                            </h:form>
+                        </p:tab>
+                        <p:tab title="#{pedidoLbl['documentos']}">
+                            <p:panel prepenId="false" id="documentos">
+                                <div style="margin-top: 10px" class="fieldset">
+                                    <div>
+                                        <h:form>
+                                            <p:outputPanel rendered="#{pedidoCtl.entidad.id ne null}"
+                                                           autoUpdate="true">
+                                                <p:toolbar>
+                                                    <p:toolbarGroup align="left">
+                                                        <p:toolbarGroup align="left">
+                                                            <p:commandButton value="#{txt.nuevo}"
+                                                                             icon="ui-icon-document"
+                                                                             actionListener="#{pedidoCtl.nuevoDocumentoPedido}"
+                                                                             process="@this"
+                                                                             update="@widgetVar(datosDocumento)"
+                                                                             oncomplete="PF('documentoPedidoTbl').filter(); PF('documentoPedidoTbl').unselectAllRows();"/>
+
+                                                            <p:commandButton value="#{txt.eliminar}"
+                                                                             icon="ui-icon-trash"
+                                                                             actionListener="#{pedidoCtl.eliminarDocumentoPedido}"
+                                                                             process="@this"
+                                                                             widgetVar="btnEliminarDoc"
+                                                                             update="@widgetVar(datosDocumento)"
+                                                                             oncomplete="PF('documentoPedidoTbl').filter(); PF('documentoPedidoTbl').unselectAllRows();">
+                                                            </p:commandButton>
+                                                        </p:toolbarGroup>
+                                                    </p:toolbarGroup>
+                                                </p:toolbar>
+                                            </p:outputPanel>
+
+                                            <p:fieldset rendered="#{pedidoCtl.entidad.id ne null}"
+                                                        widgetVar="datosDocumento">
+                                                <p:messages showDetail="true" showSummary="false"/>
+                                                <p:selectBooleanCheckbox style="margin-bottom: 8px"
+                                                                         value="#{pedidoCtl.albaran}"
+                                                                         itemLabel="Albarán">
+                                                    <p:ajax update="@this" process="@this"/>
+                                                </p:selectBooleanCheckbox>
+                                                <h:panelGroup styleClass="fieldRow">
+                                                    <h:panelGroup styleClass="field">
+                                                        <p:messages for="@next" showDetail="true" showSummary="false"/>
+                                                        <p:fileUpload id="documentoPedido"
+                                                                      widgetVar="fileUploadArticulo"
+                                                                      listener="#{pedidoCtl.handleFileUploadDocumentoPedido}"
+                                                                      process="@form"
+                                                                      label="#{articuloLbl['examinar']}"
+                                                                      cancelLabel="#{txt.cancelar}"
+                                                                      uploadLabel="#{txt.cargar}"
+                                                                      mode="advanced" dragDropSupport="true"
+                                                                      allowTypes="/(\.|\/)(doc|docx|pdf|jpg|txt|xls|xlsx)$/"
+                                                                      auto="true"
+                                                                      sizeLimit="100000000"
+                                                                      rendered="#{pedidoCtl.documentoPedido.id eq null}"
+                                                                      update="@widgetVar(datosDocumento) @widgetVar(documentoPedidoTbl)"
+                                                                      oncomplete="PF('documentoPedidoTbl').filter(); PF('documentoPedidoTbl').unselectAllRows();"/>
+
+                                                        <p:commandButton id="btnDescarga" value="Descargar"
+                                                                         icon="ui-icon-arrowthickstop-1-s" ajax="false"
+                                                                         process="@this"
+                                                                         rendered="#{pedidoCtl.documentoPedido.id ne null}">
+
+                                                            <p:fileDownload
+                                                                    value="#{pedidoCtl.descargarDocumentoPedido()}"/>
+                                                        </p:commandButton>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+
+
+                                            </p:fieldset>
+
+                                        </h:form>
+                                    </div>
+                                    <div id="rightcolumn">
+                                        <h:form>
+                                            <p:messages></p:messages>
+                                            <app:documentoPedidoTbl tablemodel="#{pedidoCtl.documentoPedidoTbl}"
+                                                                    widgetVar="documentoPedidoTbl"
+                                                                    controlador="#{pedidoCtl}"
+                                                                    onRowSelect="#{pedidoCtl.seleccionarDocumentoPedido()}"
+                                                                    onRowSelectUpdate="@widgetVar(datosDocumento) @widgetVar(btnEliminarDoc)"
+                                                                    exportable="true"/>
+                                        </h:form>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </p:tab>
+                    </p:tabView>
+                </div>
+            </div>
+        </div>
+    </ui:define>
+    <ui:define name="dialog">
+
+        <p:dialog header="#{pedidoLbl.articulos}" modal="true" width="80%" widgetVar="articuloDlg">
+            <app:articuloTbl widgetVar="articuloTbl" tablemodel="#{articuloCtl.tablemodel}"
+                             controlador="#{pedidoCtl}" onRowSelectUpdate=":pedidoFormTab"
+                             onRowSelect="#{pedidoCtl.seleccionarArticulo()}"
+                             onRowSelectComplete="PF('articuloDlg').hide()"/>
+        </p:dialog>
+
+        <p:dialog header="#{pedidoLbl.proveedores}" modal="true" width="30%" widgetVar="proveedorDlg">
+            <app:proveedorTbl widgetVar="proveedorTbl" tablemodel="#{proveedorCtl.tablemodel}"
+                              controlador="#{pedidoCtl}" onRowSelectUpdate="@widgetVar(proveedor)"
+                              onRowSelect="#{pedidoCtl.seleccionarProveedor()}"
+                              onRowSelectComplete="PF('proveedorDlg').hide()"/>
+        </p:dialog>
+
+        <p:dialog header="#{pedidoLbl.proveedores}" modal="true" width="30%" widgetVar="fabricanteDlg">
+            <app:fabricanteTbl widgetVar="fabricanteTbl" tablemodel="#{fabricanteCtl.tablemodel}"
+                               controlador="#{pedidoCtl}" onRowSelectUpdate=":pedidoFormTab"
+                               onRowSelect="#{pedidoCtl.seleccionarFabricante()}"
+                               onRowSelectComplete="PF('fabricanteDlg').hide()"/>
+        </p:dialog>
+
+        <p:dialog header="#{pedidoLbl.tramitar}" modal="true" width="30%" widgetVar="tramitarDlg">
+            <h:form>
+                <app:tramitarForm envia="true" entidad="#{pedidoCtl.entidad}"
+                                  controlador="#{pedidoCtl}"/>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="#{pedidoLbl.recibir}" modal="true" width="800" widgetVar="recibirDlg">
+
+            <div class="ui-g-12 ui-lg-12 dashboard">
+                <div class="ui-g-12 ui-lg-6 dashboard">
+                    <div class="card">
+                        <h1>#{pedidoLbl['formulario']}</h1>
+                        <h:form id="recepcionPedidoForm">
+                            <app:recibirForm envia="true" widgetVarTbl="recepcionPedidoTbl"
+                                             entidad="#{recepcionPedidoCtl.entidad}"
+                                             controlador="#{recepcionPedidoCtl}"/>
+                        </h:form>
+                    </div>
+                </div>
+                <div class="ui-g-12 ui-lg-6 dashboard">
+                    <div class="card">
+                        <h1>Recepciones</h1>
+                        <h:form>
+                            <app:recepcionPedidoTbl tablemodel="#{recepcionPedidoCtl.tablemodel}"
+                                                    widgetVar="recepcionPedidoTbl"
+                                                    controlador="#{recepcionPedidoCtl}"
+                                                    onRowSelect="#{recepcionPedidoCtl.cargarSeleccion()}"
+                                                    onRowSelectUpdate=":recepcionPedidoForm"
+                                                    exportable="true"/>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </p:dialog>
+
+        <p:dialog header="Factura" modal="true" width="60%" widgetVar="facturaDlg">
+
+            <div class="ui-g-12 ui-lg-12 dashboard">
+                <div class="ui-g-12 ui-lg-6 dashboard">
+                    <div class="card">
+                        <h1>#{pedidoLbl['formulario']}</h1>
+                        <h:form id="facturaForm">
+                            <app:facturaForm widgetVarTbl="facturaTbl" entidad="#{facturaCtl.entidad}"
+                                             controlador="#{facturaCtl}"/>
+                        </h:form>
+                    </div>
+                </div>
+                <div class="ui-g-12 ui-lg-6 dashboard">
+                    <div class="card">
+                        <h1>#{pedidoLbl['listado']}</h1>
+                        <h:form>
+                            <app:facturaTbl tablemodel="#{facturaCtl.tablemodel}"
+                                            widgetVar="facturaTbl"
+                                            controlador="#{facturaCtl}"
+                                            onRowSelect="#{facturaCtl.cargarSeleccion()}"
+                                            onRowSelectUpdate=":facturaForm"
+                                            exportable="true"/>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </p:dialog>
+
+        <p:dialog header="Recibir pedido" modal="true" width="30%" widgetVar="recibirPedidoDlg">
+
+            <div>
+                <h:form id="recibirForm">
+                    <p:panelGrid styleClass="ui-noborder" columns="2">
+                        <p:fieldset style="border: none">
+                    <p:outputLabel value="Coste"
+                                   for="@next"/>
+                    <p:inputNumber widgetVar="coste"
+                                   id="coste"
+                                   value="#{pedidoCtl.proveedorCoste.coste}"/>
+                    <p:message for="@widgetVar(coste)"/>
+                        </p:fieldset>
+                    <p:commandButton value="Recibir" actionListener="#{pedidoCtl.pasarListaRecibido()}" update="@widgetVar(pedidoTbl)" oncomplete="PF('recibirPedidoDlg').hide()"></p:commandButton>
+                    </p:panelGrid>
+                </h:form>
+            </div>
+        </p:dialog>
+
+        <p:dialog header="Anular pedido" modal="true" width="30%" widgetVar="anularPedidoDlg">
+            <div>
+                <h:form id="anularForm">
+                    <p:panelGrid styleClass="ui-noborder" columns="3">
+                        <h:outputLabel value="Motivo:"></h:outputLabel>
+                        <p:selectOneMenu value="#{pedidoCtl.motivoAnulacion}">
+                            <f:selectItem itemLabel="REPETIDO" itemValue="REPETIDO"></f:selectItem>
+                            <f:selectItem itemLabel="YA HAY STOCK" itemValue="YA HAY STOCK"></f:selectItem>
+                            <f:selectItem itemLabel="OTROS" itemValue="OTROS"></f:selectItem>
+                        </p:selectOneMenu>
+                        <p:commandButton value="Anular pedido" actionListener="#{pedidoCtl.pasarListaAnulado()}" update="@widgetVar(pedidoTbl)" oncomplete="PF('anularPedidoDlg').hide()"></p:commandButton>
+                    </p:panelGrid>
+                </h:form>
+            </div>
+        </p:dialog>
+    </ui:define>
+</ui:composition>
+</html>

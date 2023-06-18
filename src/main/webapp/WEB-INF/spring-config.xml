@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                            http://www.springframework.org/schema/beans/spring-beans.xsd
+	                        http://www.springframework.org/schema/context
+                            http://www.springframework.org/schema/context/spring-context.xsd
+
+
+                            http://www.springframework.org/schema/task
+                            http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <!--<context:annotation-config/>-->
+    <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor"/>
+    <context:component-scan base-package="com.joyero" annotation-config="true"/>
+
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
+
+    <!--Configurer that replaces ${...} placeholders with values from a properties-->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+        <property name="locations">
+            <list>
+                <value>file:c:/config/joy.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver"/>
+
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basename" value="classpath:/org/springframework/security/messages"/>
+        <!--<property name="basename" value="org.springframework.security.messages"/>/-->
+    </bean>
+
+    <!--classpath:/org/springframework/security/messages-->
+
+    <!-- Activates @Scheduled and @Async annotations for scheduling -->
+    <task:annotation-driven/>
+
+
+</beans>

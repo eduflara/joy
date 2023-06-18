@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://java.sun.com/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="widgetVar" required="yes"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="true"/>
+        <composite:attribute name="tablemodel" type="java.util.ArrayList" required="true"/>
+        <composite:attribute name="onRowSelect" required="false" method-signature="void listerner()"/>
+        <composite:attribute name="onRowSelectUpdate" required="false"/>
+        <composite:attribute name="onRowSelectComplete" required="false"/>
+        <composite:attribute name="exportable" required="false" default="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.bajaarticulo" var="bajaarticuloLbl"/>
+
+        <p:dataTable widgetVar="#{cc.attrs.widgetVar}"
+                     value="#{cc.attrs.tablemodel}"
+                     id="#{cc.attrs.widgetVar}"
+                     var="bajaarticuloSinConfirmar"
+                     filterEvent="enter"
+                     reflow="true"
+                     resizableColumns="true"
+                     sortBy="#{bajaarticulo.fecha}"
+                     rows="15"
+                     selection="#{cc.attrs.controlador.bajasSeleccionadas}"
+                     paginator="true"
+                     paginatorPosition="bottom"
+                     sortField="fecha"
+                     sortOrder="descending"
+                     currentPageReportTemplate="(${txt.registros}: {startRecord} - {endRecord} ${txt.de} {totalRecords}, ${txt.pagina}: {currentPage} ${txt.de} {totalPages})"
+                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}"
+                     rowsPerPageTemplate="10,15,20,25"
+                     emptyMessage="${txt.tablaVacia}"
+                     rowKey="#{bajaarticuloSinConfirmar.id}"
+        >
+
+            <f:facet name="header">
+
+            </f:facet>
+
+            <!--<editor-fold desc="columnas de la tabla">-->
+
+            <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
+
+            <p:column headerText="ID" rendered="#{cc.attrs.controlador.modoDepuracion}"  width="50">
+                <h:outputText value="#{bajaarticuloSinConfirmar.id}"/>
+            </p:column>
+
+            <p:column headerText="#{bajaarticuloLbl.codigo}" sortBy="#{bajaarticuloSinConfirmar.articulo.codigo}" width="100">
+                <h:outputText value="#{bajaarticuloSinConfirmar.articulo.codigo}"/>
+            </p:column>
+
+            <p:column headerText="#{bajaarticuloLbl.descripcion}" sortBy="#{bajaarticuloSinConfirmar.articulo.descripcion}" width="200">
+                <h:outputText value="#{bajaarticuloSinConfirmar.articulo.descripcion}"/>
+            </p:column>
+
+            <p:column headerText="Máquina" width="200" sortBy="#{bajaarticuloSinConfirmar.maquina}">
+                <h:outputText value="#{bajaarticuloSinConfirmar.maquina}">
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="#{bajaarticuloLbl.cantidad}" sortBy="#{bajaarticuloSinConfirmar.cantidad}">
+                <h:outputText value="#{bajaarticuloSinConfirmar.cantidad}"/>
+            </p:column>
+
+            <p:column headerText="#{bajaarticuloLbl.fecha}" sortBy="#{bajaarticuloSinConfirmar.fecha}">
+                <h:outputText value="#{bajaarticuloSinConfirmar.fecha}">
+                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"  type="localDateTime"></f:convertDateTime>
+                </h:outputText>
+            </p:column>maquina
+
+            <p:column headerText="#{bajaarticuloLbl.fechaBaja}" sortBy="#{bajaarticuloSinConfirmar.fechaBaja}">
+                <h:outputText value="#{bajaarticuloSinConfirmar.fechaBaja}">
+                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"  type="localDateTime"></f:convertDateTime>
+                </h:outputText>
+            </p:column>
+
+            <p:ajax event="rowSelect" resetValues="true" update="#{cc.attrs.onRowSelectUpdate}"
+                    listener="#{cc.attrs.onRowSelect}"
+                    oncomplete="#{cc.attrs.onRowSelectComplete}"/>
+
+            <!--</editor-fold>-->
+
+<!--            &lt;!&ndash;<editor-fold desc="eventos ajax de la tabla">&ndash;&gt;-->
+<!--            <p:ajax event="rowSelect" resetValues="true" update="#{cc.attrs.onRowSelectUpdate}"-->
+<!--                    listener="#{cc.attrs.onRowSelect}"-->
+<!--                    oncomplete="#{cc.attrs.onRowSelectComplete}"/>-->
+<!--            &lt;!&ndash;</editor-fold>&ndash;&gt;-->
+
+<!--            &lt;!&ndash;<editor-fold desc="exportaciones de la tabla">&ndash;&gt;-->
+<!--            <c:if test="#{cc.attrs.exportable}">-->
+<!--                <f:facet name="{Exporters}">-->
+<!--                    <div style="float:right;padding-top: 5px;">-->
+<!--                        <h:commandLink>-->
+<!--                            <p:graphicImage name="images/pdf.png" library="omega-layout" width="20"/>-->
+<!--                            <p:dataExporter encoding="CP1254" type="pdf" target="@widgetVar(#{cc.attrs.widget})"-->
+<!--                                            fileName="bajaarticulo"/>-->
+<!--                        </h:commandLink>-->
+
+<!--                        <h:commandLink>-->
+<!--                            <p:graphicImage name="images/excel.png" library="omega-layout" width="20"/>-->
+<!--                            <p:dataExporter type="xls" target="@widgetVar(#{cc.attrs.widget})" fileName="bajaarticulo"/>-->
+<!--                        </h:commandLink>-->
+<!--                    </div>-->
+<!--                </f:facet>-->
+<!--            </c:if>-->
+            <!--</editor-fold>-->
+        </p:dataTable>
+
+    </composite:implementation>
+</h:body>
+</html>

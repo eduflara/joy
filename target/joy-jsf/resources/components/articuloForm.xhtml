@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+>
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="entidad" type="com.joyero.app.articulo.Articulo" required="true"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="false"/>
+        <composite:attribute name="readOnly" required="false" default="false"/>
+        <composite:attribute name="widgetVarTbl" required="false"/>
+        <composite:attribute name="unidades" required="false"/>
+        <composite:attribute name="secciones" required="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.articulo" var="articuloLbl"/>
+        <f:loadBundle basename="com.joyero.app.maquina" var="maquinaLbl"/>
+        <f:loadBundle basename="com.joyero.app.bajaarticulo" var="bajaarticuloLbl"/>
+
+        <!--<editor-fold desc="botonera del formulario">-->
+        <p:toolbar>
+            <p:toolbarGroup styleClass="ui-inputgroup">
+                <p:commandButton title="#{txt.nuevo}" icon="fa fa-file-o"
+                                 actionListener="#{cc.attrs.controlador.nuevo()}" process="@this" update="@form"
+                                 resetValues="true"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"/>
+
+                <p:commandButton title="#{cc.attrs.controlador.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                 icon="fa fa-floppy-o" actionListener="#{cc.attrs.controlador.guardar()}"
+                                 process="@form"
+                                 update="@form"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"/>
+
+                <p:commandButton title="#{txt.eliminar}" icon="fa fa-trash-o"
+                                 actionListener="#{cc.attrs.controlador.eliminar()}" process="@this" update="@form"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();">
+                    <p:confirm header="#{txt.confirmacion}" message="#{txt.deseaEliminar}" icon="ui-icon-alert"/>
+                </p:commandButton>
+
+                <p:splitButton id="btnImprimir" value="#{articuloLbl.impresion}" action="#{cc.attrs.controlador.aniadirImpresion()}" icon="fa fa-print">
+                    <p:menuitem value="#{articuloLbl.exportar}">
+                    <p:fileDownload value="#{cc.attrs.controlador.informe}" />
+                    </p:menuitem>
+                </p:splitButton>
+
+            </p:toolbarGroup>
+        </p:toolbar>
+        <!--</editor-fold>-->
+
+        <p:messages autoUpdate="false" showDetail="true" showSummary="false"/>
+
+        <!--<editor-fold desc="controles del formulario">-->
+
+        <!--<editor-fold desc="text articulo - codigo">-->
+        <p:outputLabel value="#{articuloLbl.codigo}" for="@next"/>
+        <p:inputText widgetVar="codigo" id="codigo"
+                     value="#{cc.attrs.entidad.codigo}" required="true"
+                     readonly="#{cc.attrs.readOnly}"
+                     styleClass="#{cc.attrs.readOnly ? 'readOnly' : ''}"/>
+        <p:message for="@previous"/>
+        <!--</editor-fold>-->
+
+        <!--<editor-fold desc="text articulo - descripcion">-->
+        <p:outputLabel value="#{articuloLbl.descripcion}"
+                       for="@next"/>
+        <p:inputTextarea widgetVar="descripcion" id="descripcion" required="true"
+                     value="#{cc.attrs.entidad.descripcion}"
+                     readonly="#{cc.attrs.readOnly}"
+                         cols="40" rows="4"
+                     styleClass="#{cc.attrs.readOnly ? 'readOnly' : ''}"/>
+        <p:message for="@previous"/>
+        <!--</editor-fold>-->
+
+        <!--<editor-fold desc="number articulo - stockMinimo">-->
+        <p:outputLabel value="#{articuloLbl.stockMinimo}"/>
+        <p:inputNumber widgetVar="stockMinimo"
+                       id="stockMinimo"
+                       minValue="-1"
+                       maxValue="100"
+                       decimalPlaces="2"
+                       value="#{cc.attrs.controlador.entidad.stockMinimo}"/>
+        <p:message for="@widgetVar(stockMinimo)"/>
+        <!--</editor-fold>-->
+
+        <!--<editor-fold desc="number articulo - stockMaximo">-->
+        <p:outputLabel value="#{articuloLbl.stockMaximo}"/>
+        <p:inputNumber widgetVar="stockMaximo"
+                       id="stockMaximo"
+                       minValue="-1"
+                       maxValue="100"
+                       decimalPlaces="2"
+                       value="#{cc.attrs.controlador.entidad.stockMaximo}"/>
+        <p:message for="@widgetVar(stockMaximo)"/>
+        <!--</editor-fold>-->
+
+        <!--<editor-fold desc="number articulo - coste">-->
+        <p:outputLabel value="#{articuloLbl.coste}"/>
+        <p:inputNumber widgetVar="costeArticulo"
+                       id="coste"
+                       readonly="true"
+                       minValue="-1"
+                       decimalPlaces="2"
+                       value="#{cc.attrs.controlador.entidad.coste}"/>
+        <p:message for="@widgetVar(costeArticulo)"/>
+        <!--</editor-fold>-->
+
+        <!--<editor-fold desc="calendar articulo - fechaAlta">-->
+        <p:outputLabel value="#{articuloLbl.fechaAlta}"/>
+        <div class="ui-inputgroup">
+            <p:datePicker widgetVar="fechaAlta"
+                          id="fechaAlta"
+                          value="#{cc.attrs.controlador.entidad.fechaAlta}"
+                          pattern="dd-MM-yyyy"
+                          navigator="true"
+                          mask="true">
+            </p:datePicker>
+
+            <p:commandButton icon="fa fa-eraser"
+                             widgetVar="fechaHastaReset"
+                             process="@this"
+                             actionListener="#{cc.attrs.controlador.entidad.setFechaAlta(null)}"
+                             update="@widgetVar(fechaAlta)">
+            </p:commandButton>
+        </div>
+        <p:message for="@widgetVar(fechaAlta)"/>
+        <!--</editor-fold>-->
+
+
+        <!--<editor-fold desc="selectOneMenu articulo - unidad">-->
+        <p:outputLabel value="#{articuloLbl.unidad}"
+                       for="@next"/>
+        <p:selectOneMenu widgetVar="unidad" required="true"
+                         value="#{cc.attrs.entidad.unidadId}">
+            <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+            <f:selectItems value="#{cc.attrs.unidades}" var="item"
+                           itemLabel="#{item.unidad}"
+                           itemValue="#{item.id}"/>
+        </p:selectOneMenu>
+        <p:message for="@previous"/>
+        <!--</editor-fold>-->
+
+        <!--<editor-fold desc="selectOneMenu articulo - seccion">-->
+        <p:outputLabel value="#{articuloLbl.seccion}"
+                       for="@next"/>
+        <p:selectOneMenu widgetVar="seccion"
+                         value="#{cc.attrs.controlador.seccion}">
+            <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+            <f:selectItems value="#{cc.attrs.controlador.secciones}" var="item"
+                           itemLabel="#{item.descripcion}"
+                           itemValue="#{item.id}"/>
+            <p:ajax event="change" process="@this" update="@this @widgetVar(ubicacion)"></p:ajax>
+        </p:selectOneMenu>
+        <p:message for="@previous"/>
+        <!--</editor-fold>-->
+
+        <!--<editor-fold desc="selectOneMenu articulo - ubicacionId">-->
+        <p:outputLabel value="#{articuloLbl.ubicacion}"
+                       for="@next"/>
+        <p:selectOneMenu widgetVar="ubicacion"
+                         value="#{cc.attrs.entidad.ubicacionId}">
+            <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+            <f:selectItems value="#{cc.attrs.controlador.ubicacionesBySeccion}" var="item"
+                           itemLabel="#{item.descripcion}"
+                           itemValue="#{item.id}"/>
+        </p:selectOneMenu>
+        <p:message for="@previous"/>
+
+        <!--<editor-fold desc="number articulo - cantidad">-->
+        <p:outputLabel value="#{articuloLbl.cantidad}"
+                       for="@next"/>
+        <p:inputNumber widgetVar="cantidad"
+                       id="cantidad"
+                       minValue="0"
+                       decimalPlaces="2"
+                       value="#{cc.attrs.entidad.cantidad}"/>
+        <p:message for="@widgetVar(cantidad)"/>
+        <!--</editor-fold>-->
+
+        <p:outputLabel value="#{articuloLbl.cantidadReparada}"
+                       for="@next"/>
+        <p:inputNumber widgetVar="cantidadReparada"
+                       id="cantidadReparada"
+                       decimalPlaces="2"
+                       value="#{cc.attrs.entidad.cantidadReparada}"/>
+        <p:message for="@widgetVar(cantidadReparada)"/>
+
+        <p:outputLabel value="#{articuloLbl.otros}" for="otros"/>
+        <p:inputTextarea id="otros" value="#{cc.attrs.entidad.otrosDatos}"
+                         cols="40" rows="4"
+                         tabindex="2"/>
+        <!--</editor-fold>-->
+
+        <!--</editor-fold>-->
+
+
+        <p:commandButton title="#{cc.attrs.controlador.modificarRegistro ?  txt.modificar : txt.guardar}"
+                         icon="fa fa-floppy-o"
+                         value="#{cc.attrs.controlador.modificarRegistro ?  txt.modificar : txt.guardar}"
+                         actionListener="#{cc.attrs.controlador.guardar()}" process="@form" update="@form"
+                         oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"
+                         style="width:50%; margin-left:25%;"/>
+
+        <p:commandButton disabled="#{cc.attrs.controlador.entidad.id eq null}" value="#{articuloLbl.maquinas}"
+                         icon="fa fa-cogs" update="@widgetVar(maquinaDlg)"
+                         oncomplete="PF('maquinaDlg').show();" style="width:50%; margin-left:25%;">
+        </p:commandButton>
+
+        <p:commandButton disabled="#{cc.attrs.controlador.entidad.id eq null or cc.attrs.controlador.entidad.cantidad eq null}" value="#{bajaarticuloLbl.retirar}"
+                         icon="fa fa-reply" update="@widgetVar(retiradaDlg)" actionListener="#{articuloCtl.nuevaBaja()}"
+                         oncomplete="PF('retiradaDlg').show();" style="width:50%; margin-left:25%;">
+        </p:commandButton>
+
+        <p:commandButton disabled="#{cc.attrs.controlador.entidad.id eq null or cc.attrs.controlador.entidad.cantidad eq null}" value="#{bajaarticuloLbl.devolver}"
+                         icon="fa fa-reply" update="@widgetVar(devolucionDlg)" actionListener="#{articuloCtl.nuevaDevolucion()}"
+                         oncomplete="PF('devolucionDlg').show();" style="width:50%;margin-left:25%;">
+        </p:commandButton>
+
+        <p:commandButton disabled="#{cc.attrs.controlador.entidad.id eq null}" value="#{articuloLbl.informacionAvanzada}"
+                         icon="fa fa-reply" update="@widgetVar(avanzadoDlg)"
+                         oncomplete="PF('avanzadoDlg').show();" style="width:50%; margin-left:25%;">
+        </p:commandButton>
+    </composite:implementation>
+</h:body>
+
+</html>

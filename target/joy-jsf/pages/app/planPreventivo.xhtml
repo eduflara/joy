@@ -1,0 +1,902 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:app="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:o="http://omnifaces.org/ui">
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <!--Carga de los ficheros de idioma-->
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.app.planpreventivo" var="planPreventivoLbl"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{planPreventivoCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <o:viewParam name="debug" value="#{planPreventivoCtl.modoDepuracion}"/>
+        </f:metadata>
+
+        <p:log rendered="#{planPreventivoCtl.modoDepuracion}"/>
+
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-6 dashboard">
+                <div class="card">
+                    <h1>#{planPreventivoLbl['formulario']}</h1>
+                    <p:tabView id="planPreventivoTab">
+                        <p:tab title="#{planPreventivoLbl['ficha']}">
+                            <h:form prepenId="false" id="planPreventivoForm">
+                                <app:planPreventivoForm entidad="#{planPreventivoCtl.entidad}"
+                                                        controlador="#{planPreventivoCtl}"
+                                                        widgetVarTbl="planPreventivoTbl"/>
+                            </h:form>
+                        </p:tab>
+                        <p:tab title="#{planPreventivoLbl['documentos']}">
+                            <p:panel prepenId="false" id="documentos">
+                                <div style="margin-top: 10px" class="fieldset">
+                                    <div>
+                                        <h:form>
+                                            <p:outputPanel rendered="#{articuloCtl.entidad.id ne null}"
+                                                           autoUpdate="true">
+                                                <p:toolbar>
+                                                    <p:toolbarGroup align="left">
+                                                        <p:toolbarGroup align="left">
+                                                            <p:commandButton value="#{txt.nuevo}"
+                                                                             icon="ui-icon-document"
+                                                                             actionListener="#{articuloCtl.nuevoDocumentoArticulo}"
+                                                                             process="@this"
+                                                                             update="@widgetVar(datosDocumento)"
+                                                                             oncomplete="PF('documentoArticuloTbl').filter(); PF('documentoArticuloTbl').unselectAllRows();"/>
+
+                                                            <p:commandButton value="#{txt.eliminar}"
+                                                                             icon="ui-icon-trash"
+                                                                             actionListener="#{articuloCtl.eliminarDocumentoArticulo}"
+                                                                             process="@this"
+                                                                             widgetVar="btnEliminarDoc"
+                                                                             update="@widgetVar(datosDocumento)"
+                                                                             oncomplete="PF('documentoArticuloTbl').filter(); PF('documentoArticuloTbl').unselectAllRows();">
+                                                            </p:commandButton>
+                                                        </p:toolbarGroup>
+                                                    </p:toolbarGroup>
+                                                </p:toolbar>
+                                            </p:outputPanel>
+
+                                            <p:fieldset rendered="#{articuloCtl.entidad.id ne null}"
+                                                        widgetVar="datosDocumento">
+                                                <p:messages showDetail="true" showSummary="false"/>
+
+                                                <h:panelGroup styleClass="fieldRow">
+                                                    <h:panelGroup styleClass="field">
+                                                        <p:messages for="@next" showDetail="true" showSummary="false"/>
+                                                        <p:fileUpload id="documentoArticulo"
+                                                                      widgetVar="fileUploadArticulo"
+                                                                      listener="#{articuloCtl.handleFileUploadDocumentoArticulo}"
+                                                                      label="#{articuloLbl['examinar']}"
+                                                                      cancelLabel="#{txt.cancelar}"
+                                                                      uploadLabel="#{txt.cargar}"
+                                                                      mode="advanced" dragDropSupport="true"
+                                                                      allowTypes="/(\.|\/)(doc|docx|pdf|jpg|txt|xls|xlsx)$/"
+                                                                      auto="true"
+                                                                      sizeLimit="100000000"
+                                                                      rendered="#{articuloCtl.documentoArticulo.id eq null}"
+                                                                      update="@widgetVar(datosDocumento) @widgetVar(documentoArticuloTbl)"
+                                                                      oncomplete="PF('documentoArticuloTbl').filter(); PF('documentoArticuloTbl').unselectAllRows();"/>
+
+                                                        <p:commandButton id="btnDescarga" value="Descargar"
+                                                                         icon="ui-icon-arrowthickstop-1-s" ajax="false"
+                                                                         process="@this"
+                                                                         rendered="#{articuloCtl.documentoArticulo.id ne null}">
+
+                                                            <p:fileDownload
+                                                                    value="#{articuloCtl.descargarDocumentoArticulo()}"/>
+                                                        </p:commandButton>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+
+
+                                            </p:fieldset>
+
+                                        </h:form>
+                                    </div>
+                                    <div id="rightcolumn">
+                                        <h:form>
+                                            <p:messages></p:messages>
+                                            <app:documentoArticuloTbl tablemodel="#{articuloCtl.documentoArticuloTbl}"
+                                                                      widgetVar="documentoArticuloTbl"
+                                                                      controlador="#{articuloCtl}"
+                                                                      onRowSelect="#{articuloCtl.seleccionarDocumentoArticulo()}"
+                                                                      onRowSelectUpdate="@widgetVar(datosDocumento) @widgetVar(btnEliminarDoc)"
+                                                                      exportable="true"/>
+                                        </h:form>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </p:tab>
+                        <p:tab title="#{planPreventivoLbl['notificaciones']}">
+                            <h:form>
+                                <app:ordenPreventivoTbl tablemodel="#{planPreventivoCtl.ordenPreventivoTbl}"
+                                                        widgetVar="ordenTbl"
+                                                        controlador="#{planPreventivoCtl}"
+                                                        onRowSelect="#{planPreventivoCtl.cargarOrden()}"
+                                                        onRowSelectUpdate="@form"
+                                                        exportable="true"/>
+
+
+                                <app:ordenPreventivoForm entidad="#{ordenPreventivoCtl.entidad}"
+                                                         botonera="false"
+                                                         controlador="#{ordenPreventivoCtl}"
+                                                         widgetVarTbl="ordenTbl"/>
+                            </h:form>
+                        </p:tab>
+                    </p:tabView>
+                </div>
+            </div>
+
+            <div class="ui-g-12 ui-lg-6 dashboard">
+                <div class="card">
+                    <h1>#{planPreventivoLbl['listado']}</h1>
+                    <h:form>
+                        <p:outputLabel value="Fábrica"
+                                       for="@next"/>
+                        <p:selectOneMenu id="fabricaFiltroTabla" widgetVar="fabricaTabla"
+                                         value="#{articuloCtl.fabricaFiltro}">
+                            <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#{articuloCtl.fabricas}" var="fabrica"
+                                           itemLabel="#{fabrica.fabrica}"
+                                           itemValue="#{fabrica.id}"/>
+                            <p:ajax event="change" listener="#{planPreventivoCtl.filtrarFabrica()}" process="@this"
+                                    update="@widgetVar(planPreventivoTbl)"></p:ajax>
+                        </p:selectOneMenu>
+                        <p:message for="@previous"/>
+                        <!--                        <p:commandButton value="Guardar fabrica" actionListener="#{planPreventivoCtl.guardarFabrica()}"></p:commandButton>-->
+                        <app:planPreventivoTbl tablemodel="#{planPreventivoCtl.tablemodel}"
+                                               widgetVar="planPreventivoTbl"
+                                               controlador="#{planPreventivoCtl}"
+                                               onRowSelect="#{planPreventivoCtl.cargarPlanpreventivo()}"
+                                               onRowSelectUpdate=":planPreventivoTab @widgetVar(ordenTbl)"
+                                               exportable="true"/>
+                    </h:form>
+                </div>
+            </div>
+        </div>
+    </ui:define>
+    <ui:define name="dialog">
+        <p:dialog id="dialogHistoricoAnual" widgetVar="dialogHistoricoAnual"
+                  header="Historico Anual"
+                  width="auto"
+                  height="auto"
+                  resizable="false"
+                  modal="true">
+            <h:form id="formColumnasHistoricoAnual"
+                    rendered="#{planPreventivoCtl.lista != null and planPreventivoCtl.lista.size()>0}">
+                <p:fieldset>
+                    <p:panelGrid styleClass="ui-noborder" columns="4">
+                        <p:outputLabel value="Preventivo:"/>
+                        <h:outputText
+                                value="#{planPreventivoCtl.entidad.codigo}-#{planPreventivoCtl.entidad.descripcion}"/>
+                        <p:outputLabel value="Frecuencia:"/>
+                        <h:outputText value="#{planPreventivoCtl.entidad.frecuencia} Semanas"/>
+
+                        <p:outputLabel value="Año:"/>
+                        <p:selectOneMenu value="#{planPreventivoCtl.anioHistorico}">
+                            <f:selectItem itemValue="2020" itemLabel="2020"/>
+                            <f:selectItem itemValue="2021" itemLabel="2021"/>
+                            <f:selectItem itemValue="2022" itemLabel="2022"/>
+                            <p:ajax event="change" listener="#{planPreventivoCtl.calcularCalendario()}" update="@form"/>
+                        </p:selectOneMenu>
+                    </p:panelGrid>
+                </p:fieldset>
+                <p:separator/>
+                <br></br>
+                <table>
+                    <tr>
+                        <td><h:outputText value="#{planPreventivoCtl.lista.get(0).texto}"/></td>
+
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color1 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem1}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color1 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem1}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color2 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem2}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color2 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem2}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color3 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem3}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color3 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem3}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color4 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem4}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color4 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem4}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color5 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem5}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color5 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem5}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color6 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem6}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color6 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem6}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color7 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem7}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color7 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem7}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color8 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem8}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color8 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem8}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color9 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem9}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color9 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem9}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color10 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem10}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color10 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem10}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color11 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem11}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color11 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem11}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color12 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem12}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color12 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem12}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color13 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem13}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color13 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem13}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color14 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem14}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color14 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem14}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color15 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem15}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color15 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem15}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color16 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem16}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color16 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem16}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color17 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem17}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color17 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem17}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color18 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem18}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color18 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem18}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color19 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem19}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color19 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem19}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color20 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem20}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color20 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem20}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color21 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem21}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color21 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem21}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color22 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem22}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color22 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem22}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color23 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem23}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color23 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem23}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color24 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem24}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color24 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem24}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color25 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem25}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color25 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem25}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(0).color26 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem26}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(0).color26 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(0).sem26}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td><h:outputText value="#{planPreventivoCtl.lista.get(1).texto}"/></td>
+
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color1 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem1}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color1 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem1}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color2 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem2}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color2 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem2}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color3 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem3}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color3 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem3}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color4 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem4}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color4 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem4}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color5 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem5}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color5 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem5}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color6 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem6}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color6 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem6}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color7 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem7}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color7 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem7}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color8 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem8}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color8 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem8}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color9 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem9}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color9 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem9}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color10 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem10}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color10 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem10}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color11 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem11}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color11 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem11}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color12 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem12}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color12 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem12}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color13 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem13}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color13 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem13}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color14 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem14}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color14 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem14}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color15 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem15}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color15 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem15}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color16 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem16}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color16 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem16}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color17 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem17}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color17 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem17}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color18 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem18}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color18 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem18}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color19 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem19}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color19 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem19}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color20 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem20}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color20 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem20}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color21 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem21}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color21 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem21}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color22 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem22}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color22 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem22}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color23 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem23}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color23 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem23}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color24 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem24}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color24 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem24}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color25 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem25}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color25 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem25}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(1).color26 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem26}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(1).color26 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(1).sem26}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                    </tr>
+                </table>
+                <br></br>
+                <p:separator/>
+                <br></br>
+                <table>
+                    <tr>
+                        <td><h:outputText value="#{planPreventivoCtl.lista.get(2).texto}"/></td>
+
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color1 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem1}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color1 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem1}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color2 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem2}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color2 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem2}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color3 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem3}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color3 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem3}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color4 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem4}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color4 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem4}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color5 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem5}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color5 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem5}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color6 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem6}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color6 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem6}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color7 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem7}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color7 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem7}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color8 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem8}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color8 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem8}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color9 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem9}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color9 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem9}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color10 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem10}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color10 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem10}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color11 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem11}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color11 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem11}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color12 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem12}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color12 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem12}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color13 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem13}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color13 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem13}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color14 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem14}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color14 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem14}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color15 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem15}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color15 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem15}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color16 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem16}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color16 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem16}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color17 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem17}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color17 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem17}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color18 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem18}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color18 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem18}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color19 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem19}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color19 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem19}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color20 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem20}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color20 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem20}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color21 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem21}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color21 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem21}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color22 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem22}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color22 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem22}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color23 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem23}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color23 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem23}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color24 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem24}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color24 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem24}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color25 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem25}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color25 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem25}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(2).color26 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem26}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(2).color26 eq '1'}"
+                                          value="#{planPreventivoCtl.lista.get(2).sem26}"
+                                          style="background-color: yellow; font-size: medium; font-weight: bold"/></td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td><h:outputText value="#{planPreventivoCtl.lista.get(3).texto}"/></td>
+
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color1 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem1}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color1 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem1}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color2 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem2}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color2 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem2}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color3 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem3}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color3 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem3}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color4 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem4}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color4 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem4}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color5 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem5}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color5 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem5}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color6 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem6}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color6 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem6}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color7 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem7}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color7 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem7}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color8 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem8}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color8 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem8}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color9 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem9}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color9 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem9}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color10 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem10}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color10 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem10}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color11 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem11}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color11 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem11}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color12 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem12}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color12 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem12}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color13 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem13}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color13 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem13}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color14 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem14}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color14 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem14}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color15 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem15}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color15 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem15}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color16 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem16}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color16 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem16}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color17 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem17}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color17 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem17}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color18 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem18}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color18 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem18}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color19 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem19}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color19 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem19}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color20 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem20}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color20 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem20}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color21 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem21}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color21 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem21}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color22 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem22}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color22 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem22}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color23 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem23}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color23 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem23}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color24 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem24}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color24 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem24}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color25 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem25}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color25 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem25}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                        <td><h:outputText rendered="#{planPreventivoCtl.lista.get(3).color26 eq '0'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem26}"
+                                          style="background-color: #ccc; font-size: medium; font-weight: bold"/>
+                            <h:outputText rendered="#{planPreventivoCtl.lista.get(3).color26 eq '2'}"
+                                          value="#{planPreventivoCtl.lista.get(3).sem26}"
+                                          style="background-color: forestgreen; font-size: medium; font-weight: bold"/>
+                        </td>
+                    </tr>
+
+                </table>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui" xmlns:o="http://omnifaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+>
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.spc.usuario" var="grupoLbl"/>
+    </ui:define>
+
+
+    <!--<ui:define name="preRenderView">-->
+    <!--<f:event listener="#{grupoCtl.comprobarAcceso}" type="preRenderView"/>-->
+    <!--</ui:define>-->
+
+    <ui:define name="content">
+        <!--<f:metadata>-->
+        <!--&lt;!&ndash;Este método se ejecuta siempre en la carga de la página &ndash;&gt;-->
+        <!--<o:viewAction action="#{grupoCtl.onLoad}"/>-->
+        <!--&lt;!&ndash;Este método comprueba si el usuario tiene acceso a la página &ndash;&gt;-->
+        <o:viewAction action="#{grupoCtl.comprobarAcceso}"/>
+        <!--</f:metadata>-->
+
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-6 dashboard">
+                <div class="card">
+                    <h1>#{txt['formularioGrupos']}</h1>
+                    <p:panel widgetVar="datosGrupo">
+                    <h:form>
+                        <p:toolbar>
+                            <p:toolbarGroup>
+                                <p:commandButton title="${txt.nuevo}" icon="ui-icon-document"
+                                                 action="#{grupoCtl.nuevo}" process="@this"
+                                                 update="@form"
+                                                 resetValues="true"
+                                                 oncomplete="PF('tablaGrupos').filter(); PF('tablaGrupos').unselectAllRows();"/>
+
+                                <p:commandButton id="guardarUsuarioBtn"
+                                                 title="#{grupoCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                                 icon="ui-icon-disk"
+                                                 actionListener="#{grupoCtl.guardar}"
+                                                 process="@form"
+                                                 update="@widgetVar(datosGrupo)"
+                                                 oncomplete="PF('tablaGrupos').filter(); PF('tablaGrupos').unselectAllRows();"/>
+
+                            <p:commandButton id="btnEliminar" title="#{txt.eliminar}" icon="ui-icon-trash"
+                                             actionListener="#{grupoCtl.eliminar}"
+                                             process="@this"
+                                             update="@widgetVar(datosGrupo)"
+                                             disabled="#{grupoCtl.entidad.id eq null}"
+                                             oncomplete="PF('tablaGrupos').filter(); PF('tablaGrupos').unselectAllRows();">
+                                <p:confirm header="#{txt.confirmacion}" message="#{txt.deseaEliminar}"
+                                           icon="ui-icon-alert"/>
+                            </p:commandButton>
+
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:fieldset widgetVar="datosFieldGrupo">
+                            <p:messages showDetail="true" showSummary="false"/>
+
+                            <div class="ui-fluid">
+                                <p:panelGrid columns="1" columnClasses="ui-grid-col-6" layout="grid"
+                                             styleClass="ui-panelgrid-blank">
+                                    <p:outputLabel value="#{txt.nombre}" for="nombre"/>
+                                    <p:inputText id="nombre" value="#{grupoCtl.entidad.nombre}"
+                                                 placeholder="#{txt.nombre}"
+                                                 tabindex="1"/>
+
+                                    <p:outputLabel value="#{txt.descripcion}" for="desc"/>
+                                    <p:inputTextarea id="desc" value="#{grupoCtl.entidad.descripcion}"
+                                                     cols="40" rows="2"
+                                                     placeholder="#{txt.descripcion}"
+                                                     tabindex="2"/>
+                                </p:panelGrid>
+                            </div>
+
+
+                            <p:spacer height="10px"/>
+
+                            <p:treeTable value="#{grupoCtl.funcionesTree}" var="funcion"
+                                         widgetVar="selectorFunciones" style="table-layout: auto!important;"
+                                         selectionMode="checkbox" selection="#{grupoCtl.selectedNodes}">
+
+                                <p:column headerText="#{txt.funcion}" width="400px">
+                                    <h:outputText value="#{funcion}"/>
+                                </p:column>
+
+
+                                <p:column headerText="A" width="20px" style="width: 20px">
+                                    <p:selectBooleanCheckbox value="#{grupoCtl.permisosAlta[funcion]}">
+                                        <p:ajax process="@this"
+                                                listener="#{grupoCtl.asignarHijos(funcion, 'A')}"
+                                                update="@widgetVar(selectorFunciones)"/>
+                                    </p:selectBooleanCheckbox>
+                                </p:column>
+
+                                <p:column headerText="B" width="20px" style="width: 20px">
+                                    <p:selectBooleanCheckbox value="#{grupoCtl.permisosBaja[funcion]}">
+                                        <p:ajax process="@this"
+                                                listener="#{grupoCtl.asignarHijos(funcion, 'B')}"
+                                                update="@widgetVar(selectorFunciones)"/>
+                                    </p:selectBooleanCheckbox>
+                                </p:column>
+
+                                <p:column headerText="M" width="20px" style="width: 20px">
+                                    <p:selectBooleanCheckbox
+                                            value="#{grupoCtl.permisosModificacion[funcion]}">
+                                        <p:ajax process="@this"
+                                                listener="#{grupoCtl.asignarHijos(funcion, 'M')}"
+                                                update="@widgetVar(selectorFunciones)"/>
+                                    </p:selectBooleanCheckbox>
+                                </p:column>
+
+                                <p:column headerText="C" width="20px" style="width: 20px">
+                                    <p:selectBooleanCheckbox value="#{grupoCtl.permisosConsulta[funcion]}">
+                                        <p:ajax process="@this"
+                                                listener="#{grupoCtl.asignarHijos(funcion, 'C')}"
+                                                update="@widgetVar(selectorFunciones)"/>
+                                    </p:selectBooleanCheckbox>
+                                </p:column>
+
+                                <p:ajax event="select" update="@this"/>
+                                <p:ajax event="unselect" update="@this"/>
+
+                            </p:treeTable>
+                        </p:fieldset>
+                    </h:form>
+                </p:panel>
+                </div>
+            </div>
+
+            <div class="ui-g-12 ui-lg-6 dashboard">
+                <div class="card">
+                    <h1>#{txt['listadoGrupos']}</h1>
+                    <h:form>
+                    <p:dataTable id="tablaGrupos" widgetVar="tablaGrupos" value="#{grupoCtl.tablemodel}"
+                                 filterEvent="enter" resizableColumns="true"
+                                 var="grupo"
+                                 rows="20"
+                                 selectionMode="single"
+                                 selection="#{grupoCtl.tablemodel.seleccion}"
+                                 paginator="true"
+                                 paginatorPosition="bottom"
+                                 lazy="true"
+                                 currentPageReportTemplate="(${txt.registros}: {startRecord} - {endRecord} ${txt.de} {totalRecords}, ${txt.pagina}: {currentPage} ${txt.de} {totalPages})"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="10,20,25"
+                                 reflow="true"
+                                 emptyMessage="${txt.tablaVacia}">
+
+                        <p:ajax event="rowSelect" listener="#{grupoCtl.cargarSeleccion}"
+                                update="@widgetVar(datosGrupo)" resetValues="true"/>
+
+                        <p:column headerText="#{txt.nombre}" filterBy="#{grupo.nombre}"
+                                  sortBy="#{grupo.nombre}">
+                            <h:outputText value="#{grupo.nombre}"/>
+                        </p:column>
+
+                        <p:column headerText="#{txt.descripcion}" filterBy="#{grupo.descripcion}"
+                                  sortBy="#{grupo.descripcion}">
+                            <h:outputText value="#{grupo.descripcion}"/>
+                        </p:column>
+
+                    </p:dataTable>
+                </h:form>
+                </div>
+            </div>
+        </div>
+
+
+    </ui:define>
+    <ui:define name="dialog">
+
+    </ui:define>
+
+</ui:composition>
+</html>

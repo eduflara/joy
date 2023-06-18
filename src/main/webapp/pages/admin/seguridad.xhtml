@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui" xmlns:o="http://omnifaces.org/ui"
+>
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <!--<ui:define name="preRenderView">-->
+    <!--<f:event listener="#{usuarioCtl.comprobarAcceso}" type="preRenderView"/>-->
+    <!--</ui:define>-->
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{usuarioCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <o:viewAction action="#{usuarioCtl.comprobarAcceso}"/>
+        </f:metadata>
+
+        <p:tabView dynamic="false" cache="false" id="seguridadTabView">
+            <p:ajax event="tabChange" resetValues="true" update="@widgetVar(datosUsuario) @widgetVar(datosGrupo)"/>
+
+            <p:tab title="#{txt.usuarios}">
+                <div class="ui-g">
+                    <div class="ui-g-12 ui-lg-6">
+                        <h:form id="usuarioForm">
+                            <p:defaultCommand target="guardarUsuarioBtn"/>
+                            <p:outputPanel>
+                                <p:toolbar>
+                                    <p:toolbarGroup>
+                                        <p:commandButton
+                                                title="${txt.nuevo}" icon="ui-icon-document"
+                                                         action="#{usuarioCtl.nuevo}" process="@this"
+                                                         update="@form, @widgetVar(tablaUsuarios), @widgetVar(alarmasUsuarioDialog)"
+                                                         resetValues="true"/>
+
+                                        <p:commandButton id="guardarUsuarioBtn"
+                                                         value="#{usuarioCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                                         icon="ui-icon-disk"
+                                                         actionListener="#{usuarioCtl.guardar}"
+                                                         process="@form"
+                                                         update="@widgetVar(datosUsuario), @widgetVar(alarmasUsuarioDialog)"
+                                                         oncomplete="PF('tablaUsuarios').filter(); PF('tablaUsuarios').unselectAllRows();"/>
+
+                                        <p:commandButton id="btnEliminar" value="#{txt.eliminar}" icon="ui-icon-trash"
+                                                         actionListener="#{usuarioCtl.eliminar}"
+                                                         process="@this"
+                                                         update="@widgetVar(datosUsuario), @widgetVar(alarmasUsuarioDialog)"
+                                                         disabled="#{usuarioCtl.entidad.id eq null}"
+                                                         oncomplete="PF('tablaUsuarios').filter(); PF('tablaUsuarios').unselectAllRows();">
+                                            <p:confirm header="#{txt.confirmacion}" message="#{txt.deseaEliminar}"
+                                                       icon="ui-icon-alert"/>
+                                        </p:commandButton>
+
+                                    </p:toolbarGroup>
+                                </p:toolbar>
+                            </p:outputPanel>
+
+                            <p:fieldset widgetVar="datosUsuario">
+                                <p:messages showDetail="true" showSummary="false"/>
+
+                                <div class="ui-fluid">
+                                    <p:panelGrid columns="2" columnClasses="ui-grid-col-6, ui-grid-col-6" layout="grid"
+                                                 styleClass="ui-panelgrid-blank">
+                                        <!--<p:panelGrid columns="2" columnClasses="label">-->
+                                        <p:outputLabel value="#{txt.nombreUsuario}" for="nombreUsuario"/>
+                                        <p:outputLabel value="#{txt.nombreCompleto}" for="nombreCompleto"/>
+
+                                        <p:inputText id="nombreUsuario" value="#{usuarioCtl.entidad.username}"
+                                                     placeholder="#{txt.nombreUsuario}"
+                                                     tabindex="1" readonly="false"/>
+
+                                        <p:inputText id="nombreCompleto"
+                                                     value="#{usuarioCtl.entidad.nombreCompleto}" size="50"
+                                                     placeholder="#{txt.nombreCompleto}"
+                                                     tabindex="2" readonly="false"/>
+
+                                        <p:outputLabel value="#{txt['dni']}" for="dni"/>
+                                        <p:outputLabel value="#{txt['correo']}" for="correo"/>
+                                        <p:inputText id="dni" size="20"
+                                                     placeholder="#{txt.dni}"
+                                                     tabindex="4"
+                                                     value="#{usuarioCtl.entidad.dni}"/>
+
+
+                                        <p:inputText id="correo" size="55"
+                                                     placeholder="#{txt.correo}"
+                                                     tabindex="3"
+                                                     value="#{usuarioCtl.entidad.correo}"/>
+
+                                        <p:outputLabel value="#{txt['telefono']}" for="telefono"/>
+                                        <p:spacer/>
+                                        <p:inputText id="telefono" size="20"
+                                                     placeholder="#{txt.telefono}"
+                                                     tabindex="4"
+                                                     value="#{usuarioCtl.entidad.telefono}"/>
+                                        <p:spacer/>
+
+
+                                        <p:outputLabel value="#{txt.contrasena}" for="password"/>
+                                        <p:outputLabel value="#{txt.repetirContrasena}" for="passwordConfirm"/>
+                                        <p:password id="password" value="#{usuarioCtl.password}"
+                                                    match="passwordConfirm"
+                                                    feedback="true"
+                                                    weakLabel="#{txt.contrasenaDebil}"
+                                                    strongLabel="#{txt.contrasenaFuerte}"
+                                                    goodLabel="#{txt.contrasenaBuena}"
+                                                    promptLabel="#{txt.introducirContrasena}"
+                                                    placeholder="#{txt.contrasena}"
+                                                    tabindex="5"/>
+
+
+                                        <p:password id="passwordConfirm" value="#{usuarioCtl.password}"
+                                                    placeholder="#{txt.repetirContrasena}"
+                                                    tabindex="6"/>
+
+
+                                        <p:outputLabel value="#{label.modoAcceso}" for="@next"/>
+                                        <p:selectOneMenu widgetVar="modoAcceso"
+                                                         value="#{usuarioCtl.entidad.modoAcceso}">
+                                            <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                                            <f:selectItems value="#{usuarioCtl.modosAcceso}" var="item"
+                                                           itemLabel="#{item.descripcion}"
+                                                           itemValue="#{item.codigo}"/>
+                                        </p:selectOneMenu>
+
+
+                                        <p:outputLabel value="#{label.buzon}" for="@next"/>
+                                        <p:selectOneMenu widgetVar="buzon"
+                                                         value="#{usuarioCtl.entidad.idBuzon}">
+                                            <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                                            <f:selectItems value="#{usuarioCtl.buzones}" var="item"
+                                                           itemLabel="#{item.descripcion}"
+                                                           itemValue="#{item.id}"/>
+                                        </p:selectOneMenu>
+
+                                        <p:selectBooleanCheckbox id="miembro_mesa"
+                                                                 value="#{usuarioCtl.entidad.miembroMesa}"
+                                                                 itemLabel="#{app.miembromesa}"
+                                                                 tabindex="7"/>
+
+                                        <p:selectBooleanCheckbox id="activo"
+                                                                 value="#{usuarioCtl.entidad.enabled}"
+                                                                 itemLabel="#{txt.activo}"
+                                                                 tabindex="7"/>
+
+                                    </p:panelGrid>
+                                    <p:panelGrid columns="2" columnClasses="ui-grid-col-6, ui-grid-col-6" layout="grid"
+                                                 styleClass="ui-panelgrid-blank">
+                                        <p:commandButton widgetVar="botonAlarmas"
+                                                         id="botonAlarmas" icon="fa fa-bell"
+                                                         value="#{app.alarmasUsuario}"
+                                                         style="width: 150px;margin-top:1.1em;"
+                                                         onclick="PF('alarmasUsuarioDialog').show()"
+                                        >
+                                        </p:commandButton>
+
+                                        <p:commandButton widgetVar="botonDestinatarios"
+                                                         id="botonDestinatarios" icon="fa fa-bell"
+                                                         value="#{app.destinatariosUsuario}"
+                                                         style="width: 150px;margin-top:1.1em;"
+                                                         onclick="PF('usuarioDestinatarioDialog').show()"
+                                        >
+                                        </p:commandButton>
+
+
+                                    </p:panelGrid>
+                                </div>
+                                <p:spacer height="10px"/>
+
+
+                                <p:dataTable value="#{usuarioCtl.grupos}" var="grupo">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{txt['grupoUsuarios']}"/>
+                                    </f:facet>
+
+                                    <p:column width="25">
+                                        <p:selectBooleanCheckbox
+                                                value="#{usuarioCtl.tablaGrupos[grupo.nombre]}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{txt.grupoUsuarios}">
+                                        <h:outputText value="#{grupo.nombre}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:fieldset>
+                        </h:form>
+                    </div>
+
+                    <div class="ui-g-12 ui-lg-6">
+                        <h:form>
+                            <p:dataTable id="tablaUsuarios" widgetVar="tablaUsuarios" value="#{usuarioTableModel}"
+                                         filterEvent="enter" resizableColumns="true" reflow="true"
+                                         var="usuario"
+                                         rows="20"
+                                         selectionMode="single"
+                                         selection="#{usuarioTableModel.seleccion}"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         lazy="true"
+                                         currentPageReportTemplate="(${txt.registros}: {startRecord} - {endRecord} ${txt.de} {totalRecords}, ${txt.pagina}: {currentPage} ${txt.de} {totalPages})"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="10,20,25"
+                                         emptyMessage="${txt.tablaVacia}">
+
+                                <p:ajax event="rowSelect" listener="#{usuarioCtl.seleccionarUsuario}"
+                                        update="@widgetVar(datosUsuario), @widgetVar(alarmasUsuarioDialog), @widgetVar(usuarioDestinatarioDialog)"
+                                        resetValues="true"/>
+
+                                <p:column headerText="#{txt.nombreUsuario}" filterBy="#{usuario.username}"
+                                          sortBy="#{usuario.username}">
+                                    <h:outputText value="#{usuario.username}"/>
+                                </p:column>
+
+                                <p:column headerText="#{txt.nombreCompleto}"
+                                          filterBy="#{usuario.nombreCompleto}"
+                                          sortBy="#{usuario.nombreCompleto}">
+                                    <h:outputText value="#{usuario.nombreCompleto}"/>
+                                </p:column>
+
+
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+                </div>
+            </p:tab>
+
+            <p:tab title="#{txt.gruposUsuarios}">
+                <div class="ui-g">
+                    <div class="ui-g-12 ui-lg-6">
+                        <h:form>
+                            <p:outputPanel>
+                                <p:defaultCommand target="guardarGrupoBtn"/>
+                                <p:toolbar>
+                                    <p:toolbarGroup align="left">
+                                        <p:commandButton value="${txt.nuevo}" icon="ui-icon-document"
+                                                         action="#{grupoCtl.nuevo}" process="@this"
+                                                         update="@widgetVar(datosGrupo), @widgetVar(tablaGrupos)"
+                                                         resetValues="true"/>
+
+                                        <p:commandButton id="guardarGrupoBtn"
+                                                         value="#{grupoCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                                         icon="ui-icon-disk"
+                                                         actionListener="#{grupoCtl.guardar}"
+                                                         process="@form" update="@widgetVar(datosGrupo)"
+                                                         oncomplete="PF('tablaGrupos').filter(); PF('tablaGrupos').unselectAllRows();"/>
+
+                                        <p:commandButton value="#{txt.eliminar}" icon="ui-icon-trash"
+                                                         actionListener="#{grupoCtl.eliminar}"
+                                                         process="@this" update="@widgetVar(datosGrupo)"
+                                                         disabled="#{grupoCtl.grupo.id eq null}"
+                                                         oncomplete="PF('tablaGrupos').filter(); PF('tablaGrupos').unselectAllRows();">
+                                            <p:confirm header="#{txt.confirmacion}" message="#{txt.deseaEliminar}"
+                                                       icon="ui-icon-alert"/>
+                                        </p:commandButton>
+
+                                        <p:separator/>
+
+                                    </p:toolbarGroup>
+                                </p:toolbar>
+                            </p:outputPanel>
+
+                            <p:fieldset widgetVar="datosGrupo">
+                                <p:messages showDetail="true" showSummary="false"/>
+
+                                <div class="ui-fluid">
+                                    <p:panelGrid columns="1" columnClasses="ui-grid-col-6" layout="grid"
+                                                 styleClass="ui-panelgrid-blank">
+                                        <p:outputLabel value="#{txt.nombre}" for="nombre"/>
+                                        <p:inputText id="nombre" value="#{grupoCtl.grupo.nombre}"
+                                                     placeholder="#{txt.nombre}"
+                                                     tabindex="1"/>
+
+                                        <p:outputLabel value="#{txt.descripcion}" for="desc"/>
+                                        <p:inputTextarea id="desc" value="#{grupoCtl.grupo.descripcion}"
+                                                         cols="40" rows="2"
+                                                         placeholder="#{txt.descripcion}"
+                                                         tabindex="2"/>
+                                    </p:panelGrid>
+                                </div>
+
+
+                                <p:spacer height="10px"/>
+
+                                <!--<p:treeTable value="#{grupoCtl.funcionesTree}" var="funcion"-->
+                                <!--widgetVar="selectorFunciones" style="table-layout: auto!important;"-->
+                                <!--selectionMode="checkbox" selection="#{grupoCtl.selectedNodes}">-->
+
+                                <!--<p:column headerText="#{txt.funcion}" width="400px">-->
+                                <!--<h:outputText value="#{funcion}"/>-->
+                                <!--</p:column>-->
+
+
+                                <!--<p:column headerText="A" width="20px" style="width: 20px">-->
+                                <!--<p:selectBooleanCheckbox value="#{grupoCtl.permisosAlta[funcion]}">-->
+                                <!--<p:ajax process="@this"-->
+                                <!--listener="#{grupoCtl.asignarHijos(funcion, 'A')}"-->
+                                <!--update="@widgetVar(selectorFunciones)"/>-->
+                                <!--</p:selectBooleanCheckbox>-->
+                                <!--</p:column>-->
+
+                                <!--<p:column headerText="B" width="20px" style="width: 20px">-->
+                                <!--<p:selectBooleanCheckbox value="#{grupoCtl.permisosBaja[funcion]}">-->
+                                <!--<p:ajax process="@this"-->
+                                <!--listener="#{grupoCtl.asignarHijos(funcion, 'B')}"-->
+                                <!--update="@widgetVar(selectorFunciones)"/>-->
+                                <!--</p:selectBooleanCheckbox>-->
+                                <!--</p:column>-->
+
+                                <!--<p:column headerText="M" width="20px" style="width: 20px">-->
+                                <!--<p:selectBooleanCheckbox-->
+                                <!--value="#{grupoCtl.permisosModificacion[funcion]}">-->
+                                <!--<p:ajax process="@this"-->
+                                <!--listener="#{grupoCtl.asignarHijos(funcion, 'M')}"-->
+                                <!--update="@widgetVar(selectorFunciones)"/>-->
+                                <!--</p:selectBooleanCheckbox>-->
+                                <!--</p:column>-->
+
+                                <!--<p:column headerText="C" width="20px" style="width: 20px">-->
+                                <!--<p:selectBooleanCheckbox value="#{grupoCtl.permisosConsulta[funcion]}">-->
+                                <!--<p:ajax process="@this"-->
+                                <!--listener="#{grupoCtl.asignarHijos(funcion, 'C')}"-->
+                                <!--update="@widgetVar(selectorFunciones)"/>-->
+                                <!--</p:selectBooleanCheckbox>-->
+                                <!--</p:column>-->
+
+                                <!--<p:ajax event="select" update="@this"/>-->
+                                <!--<p:ajax event="unselect" update="@this"/>-->
+
+                                <!--</p:treeTable>-->
+                            </p:fieldset>
+                        </h:form>
+
+                    </div>
+
+                    <div class="ui-g-12 ui-lg-6">
+                        <h:form>
+                            <p:dataTable id="tablaGrupos" widgetVar="tablaGrupos" value="#{grupoTableModel}"
+                                         filterEvent="enter" resizableColumns="true"
+                                         var="grupo"
+                                         rows="20"
+                                         selectionMode="single"
+                                         selection="#{grupoTableModel.seleccion}"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         lazy="true"
+                                         currentPageReportTemplate="(${txt.registros}: {startRecord} - {endRecord} ${txt.de} {totalRecords}, ${txt.pagina}: {currentPage} ${txt.de} {totalPages})"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="10,20,25"
+                                         reflow="true"
+                                         emptyMessage="${txt.tablaVacia}">
+
+                                <p:ajax event="rowSelect" listener="#{grupoCtl.seleccionarGrupo}"
+                                        update="@widgetVar(datosGrupo)" resetValues="true"/>
+
+                                <p:column headerText="#{txt.nombre}" filterBy="#{grupo.nombre}"
+                                          sortBy="#{grupo.nombre}">
+                                    <h:outputText value="#{grupo.nombre}"/>
+                                </p:column>
+
+                                <p:column headerText="#{txt.descripcion}" filterBy="#{grupo.descripcion}"
+                                          sortBy="#{grupo.descripcion}">
+                                    <h:outputText value="#{grupo.descripcion}"/>
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+                </div>
+            </p:tab>
+        </p:tabView>
+    </ui:define>
+
+
+</ui:composition>
+</html>

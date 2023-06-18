@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:app="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:o="http://omnifaces.org/ui">
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <!--Carga de los ficheros de idioma-->
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.app.seccion" var="seccionLbl"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{seccionCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <!--            <o:viewAction action="#{seccionCtl.comprobarAcceso}"/>-->
+            <o:viewParam name="debug" value="#{seccionCtl.modoDepuracion}"/>
+        </f:metadata>
+
+        <p:log rendered="#{seccionCtl.modoDepuracion}"/>
+
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-6 dashboard">
+                <div class="card">
+                    <h1>#{seccionLbl['formulario']}</h1>
+                    <h:form prepenId="false" id="seccionForm">
+                        <app:seccionForm entidad="#{seccionCtl.entidad}"
+                                         controlador="#{seccionCtl}"
+                                         widgetVarTbl="seccionTbl"
+                                         fabricas="#{seccionCtl.fabricas}"/>
+                    </h:form>
+                </div>
+            </div>
+
+            <div class="ui-g-12 ui-lg-6 dashboard">
+                <div class="card">
+                    <h1>#{seccionLbl['listado']}</h1>
+                    <h:form>
+                        <app:seccionTbl tablemodel="#{seccionCtl.tablemodel}"
+                                        widgetVar="seccionTbl"
+                                        controlador="#{seccionCtl}"
+                                        onRowSelect="#{seccionCtl.cargarSeleccion}"
+                                        onRowSelectUpdate=":seccionForm"
+                                        exportable="true"/>
+                    </h:form>
+                </div>
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>
+</html>

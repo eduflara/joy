@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:app="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:o="http://omnifaces.org/ui">
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <!--Carga de los ficheros de idioma-->
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.app.fabrica" var="fabricaLbl"/>
+        <f:loadBundle basename="com.joyero.app.maquina" var="maquinaLbl"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{fabricaCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <!--            <o:viewAction action="#{fabricaCtl.comprobarAcceso}"/>-->
+            <o:viewParam name="debug" value="#{fabricaCtl.modoDepuracion}"/>
+        </f:metadata>
+
+        <p:log rendered="#{fabricaCtl.modoDepuracion}"/>
+
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-3 dashboard">
+                <div class="fieldset ui-fluid">
+                    <p:tabView id="pedidoFormTab">
+                        <div class="card">
+                            <p:tab title="Previsión sobre preventivos">
+                                <h:form>
+
+                                    <p:outputLabel value="Fecha desde" for="@next"/>
+                                    <p:calendar required="false" value="#{articuloCtl.fechaPrevisionDesde}"
+                                                locale="#{sesionCtl.locale.language}"
+                                                pattern="dd-MM-yyyy HH:mm"
+                                                navigator="true"
+                                                mask="true"></p:calendar>
+                                    <p:message for="@previous"/>
+
+                                    <p:outputLabel value="Fecha hasta" for="@next"/>
+                                    <p:calendar required="false" value="#{articuloCtl.fechaPrevision}"
+                                                locale="#{sesionCtl.locale.language}"
+                                                pattern="dd-MM-yyyy HH:mm"
+                                                navigator="true"
+                                                mask="true"></p:calendar>
+                                    <p:message for="@previous"/>
+
+                                    <p:outputLabel value="#{fabricaLbl.fabrica}"
+                                                   for="@next"/>
+                                    <p:selectOneMenu id="fabricaFiltro" widgetVar="fabrica"
+                                                     value="#{articuloCtl.fabricaFiltro}">
+                                        <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{articuloCtl.fabricas}" var="fabrica"
+                                                       itemLabel="#{fabrica.fabrica}"
+                                                       itemValue="#{fabrica.id}"/>
+                                        <p:ajax event="change" process="@this" update="@widgetVar(maquina)"></p:ajax>
+                                    </p:selectOneMenu>
+                                    <p:message for="@previous"/>
+
+                                    <p:outputLabel for="@next" value="#{maquinaLbl['maquinas']}"/>
+                                    <p:autoComplete id="maquina" widgetVar="maquina"
+                                                    value="#{articuloCtl.maquinaPrevision}"
+                                                    completeMethod="#{articuloCtl.getMaquinasByNombre}"
+                                                    var="item" itemLabel="#{item.descripcion}" itemValue="#{item}"
+                                                    forceSelection="true" scrollHeight="200"
+                                                    converter="#{maquinaConverter}"
+                                                    minQueryLength="3" dropdown="true">
+                                        <p:column>
+                                            <h:outputText value="#{item.descripcion}"/>
+                                        </p:column>
+
+                                        <p:column>
+                                            <h:outputText value="#{item.id}"/>
+                                        </p:column>
+
+                                        <p:ajax event="itemSelect" update="@this" process="@this"/>
+                                    </p:autoComplete>
+                                    <p:commandButton icon="fa fa-eraser"
+                                                     widgetVar="borrarMaquina"
+                                                     process="@this"
+                                                     actionListener="#{articuloCtl.setMaquinaPrevision(null)}"
+                                                     update="@widgetVar(maquina)">
+                                    </p:commandButton>
+                                    <p:message for="@previous"/>
+
+                                    <p:outputLabel rendered="false" for="@next" value="#{maquinaLbl['articulos']}"/>
+                                    <p:autoComplete rendered="false" id="articulo" widgetVar="articulo"
+                                                    value="#{articuloCtl.articuloPrevision}"
+                                                    completeMethod="#{articuloCtl.getArtiuclosByCodigo}"
+                                                    var="articulo"
+                                                    itemLabel=" #{articulo.codigo} #{articulo.descripcion}"
+                                                    itemValue="#{articulo}"
+                                                    forceSelection="true" scrollHeight="200"
+                                                    converter="#{articuloConverter}"
+                                                    minQueryLength="3" dropdown="true">
+                                        <p:column>
+                                            <h:outputText value="#{articulo.codigo}"/>
+                                        </p:column>
+
+                                        <p:column>
+                                            <h:outputText value="#{articulo.descripcion}"/>
+                                        </p:column>
+
+                                        <p:ajax event="itemSelect" update="@this" process="@this"/>
+                                    </p:autoComplete>
+                                    <p:commandButton rendered="false" icon="fa fa-eraser"
+                                                     widgetVar="borrarArticulo"
+                                                     process="@this"
+                                                     actionListener="#{articuloCtl.setArticuloPrevision(null)}"
+                                                     update="@widgetVar(articulo)">
+                                    </p:commandButton>
+                                    <p:message for="@previous"/>
+                                    <p:commandButton update="@widgetVar(panelTablas) @widgetVar(sumaTotales)"
+                                                     value="Filtrar"
+                                                     actionListener="#{articuloCtl.crearPrevision()}"></p:commandButton>
+
+                                </h:form>
+                            </p:tab>
+                            <p:tab title="Correctivos">
+                                <h:form>
+                                    <p:outputLabel value="Fecha desde" for="@next"/>
+                                    <p:calendar required="false" value="#{articuloCtl.fechaPrevisionDesde}"
+                                                locale="#{sesionCtl.locale.language}"
+                                                pattern="dd-MM-yyyy HH:mm"
+                                                navigator="true"
+                                                mask="true"></p:calendar>
+                                    <p:message for="@previous"/>
+
+                                    <p:outputLabel value="Fecha hasta" for="@next"/>
+                                    <p:calendar required="false" value="#{articuloCtl.fechaPrevision}"
+                                                locale="#{sesionCtl.locale.language}"
+                                                pattern="dd-MM-yyyy HH:mm"
+                                                navigator="true"
+                                                mask="true"></p:calendar>
+                                    <p:message for="@previous"/>
+
+                                    <p:outputLabel value="#{fabricaLbl.fabrica}"
+                                                   for="@next"/>
+                                    <p:selectOneMenu id="fabricaFiltro2" widgetVar="fabricaFiltro2"
+                                                     value="#{articuloCtl.fabricaFiltro}">
+                                        <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{articuloCtl.fabricas}" var="fabrica2"
+                                                       itemLabel="#{fabrica2.fabrica}"
+                                                       itemValue="#{fabrica2.id}"/>
+                                        <p:ajax event="change" process="@this" update="@widgetVar(maquina) @widgetVar(zona)"></p:ajax>
+                                    </p:selectOneMenu>
+                                    <p:message for="@previous"/>
+
+                                    <p:outputLabel value="Sección"
+                                                   for="@next"/>
+                                    <p:selectOneMenu   widgetVar="zona"
+                                                      value="#{articuloCtl.seccionPrevision}" converter="#{sec}">
+                                        <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{articuloCtl.zonas}" var="item"
+                                                       itemLabel="#{item.codigo} #{item.descripcion}"
+                                                       itemValue="#{item.id}"/>
+                                        <p:ajax event="itemSelect" update="@this @widgetVar(maquina)" process="@this"/>
+                                    </p:selectOneMenu>
+                                    <p:message for="@previous"/>
+
+                                    <p:commandButton icon="fa fa-eraser"
+                                                     widgetVar="borrarSeccion"
+                                                     process="@this"
+                                                     actionListener="#{articuloCtl.setSeccionPrevision(null)}"
+                                                     update="@widgetVar(zona)">
+                                    </p:commandButton>
+                                    <p:message for="@previous"/>
+
+                                    <p:outputLabel for="@next" value="#{maquinaLbl['maquinas']}"/>
+                                    <p:autoComplete id="maquina2" widgetVar="maquina2"
+                                                    value="#{articuloCtl.maquinaPrevision}"
+                                                    completeMethod="#{articuloCtl.getMaquinasByNombre}"
+                                                    var="item" itemLabel="#{item.descripcion}" itemValue="#{item}"
+                                                    forceSelection="true" scrollHeight="200"
+                                                    converter="#{maquinaConverter}"
+                                                    minQueryLength="3" dropdown="true">
+                                        <p:column>
+                                            <h:outputText value="#{item.descripcion}"/>
+                                        </p:column>
+
+                                        <p:column>
+                                            <h:outputText value="#{item.id}"/>
+                                        </p:column>
+
+                                        <p:ajax event="itemSelect" update="@this" process="@this"/>
+                                    </p:autoComplete>
+
+                                    <p:commandButton icon="fa fa-eraser"
+                                                     widgetVar="borrarMaquina2"
+                                                     process="@this"
+                                                     actionListener="#{articuloCtl.setMaquinaPrevision(null)}"
+                                                     update="@widgetVar(maquina2)">
+                                    </p:commandButton>
+                                    <p:message for="@previous"/>
+
+                                    <p:commandButton update="@widgetVar(panelTablas) @widgetVar(sumaTotales)" value="Filtrar"
+                                                     actionListener="#{articuloCtl.crearPrevisionCorrectivo()}"></p:commandButton>
+                                </h:form>
+                            </p:tab>
+                        </div>
+                    </p:tabView>
+                </div>
+            </div>
+            <div class="ui-g-12 ui-lg-9 dashboard">
+                <p:panel widgetVar="panelTablas">
+                    <p:panel style="border: none" widgetVar="sumaTotales">
+                        <p:panelGrid styleClass="ui-noborder" columns="2">
+                            <h:outputText style="font-weight: bold;" decimalPlaces="2" value="Total artículos: #{articuloCtl.getNumeroString(articuloCtl.calculoTodoArticulos)}€"></h:outputText>
+                            <h:outputText style="font-weight: bold;" decimalPlaces="2" value="Total tiempo: #{articuloCtl.getNumeroString(articuloCtl.calculoTodoTiempos)}€"></h:outputText>
+                        </p:panelGrid>
+                    </p:panel>
+
+                    <h:panelGroup rendered="#{articuloCtl.previsionPreventivos eq true}">
+                        <h:form>
+                            <p:commandButton process="@this" ajax="false" icon="fa fa-file-excel-o"
+                                             value="Exportar">
+                                <p:fileDownload value="#{articuloCtl.generarArchivoExcel()}">
+                                </p:fileDownload>
+                            </p:commandButton>
+                        </h:form>
+
+                        <!--                        <h:form>-->
+                        <!--                            <p:commandButton value="Exportar" ajax="false" process="@this">-->
+                        <!--                                <p:dataExporter target="tablaArticulos" type="xls"-->
+                        <!--                                                fileName="prevision"></p:dataExporter>-->
+                        <!--                            </p:commandButton>-->
+                        <!--                        </h:form>-->
+                        <p:dataScroller value="#{articuloCtl.preventivasPrevistas}" var="preventivo" chunkSize="10">
+                            <p:panel style="background: #2e7bb8;margin-bottom: 10px">
+                                <p:panelGrid styleClass="ui-noborder" style="margin-top: 5px;font-size: 20px;"
+                                             columns="4">
+                                    <h:outputText value="Semana #{preventivo.planPreventivo.proximaSemana}">
+                                    </h:outputText>
+                                    <h:outputText value="#{preventivo.planPreventivo.maquina.codigo}"></h:outputText>
+                                    <h:outputText
+                                            value="#{preventivo.planPreventivo.maquina.descripcion}"></h:outputText>
+                                    <h:outputText value="#{preventivo.planPreventivo.descripcion}"></h:outputText>
+                                </p:panelGrid>
+                                <p:dataTable widgetVar="tablaArticulosPreventivos"
+                                             value="#{preventivo.getListaBajas()}"
+                                             var="cantidadordenPreventivo"
+                                             filterEvent="enter"
+                                             reflow="true"
+                                             resizableColumns="true"
+                                             sortBy="#{cantidadordenPreventivo.bajaArticulo.fecha}"
+                                             rows="20"
+                                             paginator="false"
+                                             lazy="true"
+                                             emptyMessage="${txt.tablaVacia}">
+
+                                    <f:facet name="header">
+                                        <h:outputText value="Bajas artículos"/>
+                                    </f:facet>
+
+                                    <!--<editor-fold desc="columnas de la tabla">-->
+
+                                    <p:column headerText="Artículo">
+                                        <h:outputText
+                                                value="#{cantidadordenPreventivo.bajaArticulo.articulo.descripcion}"/>
+                                        <h:outputText value="#{cantidadordenPreventivo.articuloSubcontrata.descripcion}"/>
+                                    </p:column>
+
+
+                                    <p:column headerText="Cantidad">
+                                        <h:outputText value="#{cantidadordenPreventivo.cantidad}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Stock almacen">
+                                        <h:outputText
+                                                value="#{cantidadordenPreventivo.bajaArticulo.articulo.cantidad}"/>
+                                    </p:column>
+                                    <p:column headerText="Precio">
+                                        <h:outputText value="#{articuloCtl.getNumeroString(cantidadordenPreventivo.precio)}€"/>
+                                    </p:column>
+
+                                    <p:column headerText="Total">
+                                        <h:outputText value="#{articuloCtl.getNumeroString(cantidadordenPreventivo.getTotalPreventivo())}€"/>
+                                    </p:column>
+
+                                    <p:column headerText="Fecha">
+                                        <h:outputText value="#{cantidadordenPreventivo.bajaArticulo.fecha}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy"
+                                                               type="localDateTime"></f:convertDateTime>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <f:facet name="footer">
+                                        <h:outputText value="Total: #{articuloCtl.getNumeroString(preventivo.sumaBajas())}€">
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:dataTable>
+                                <p:dataTable widgetVar="tablaTiemposPreventivos"
+                                             value="#{preventivo.getListaTiempos()}"
+                                             var="tiempoTecnicoPreventivo"
+                                             filterEvent="enter"
+                                             reflow="true"
+                                             resizableColumns="true"
+                                             sortBy="#{tiempoTecnicoPreventivo.fecha}"
+                                             rows="20"
+                                             paginator="false"
+                                             lazy="true"
+                                             emptyMessage="${txt.tablaVacia}">
+
+                                    <f:facet name="header">
+                                        <h:outputText value="Tiempos empleados"/>
+                                    </f:facet>
+
+                                    <!--<editor-fold desc="columnas de la tabla">-->
+
+
+                                    <p:column headerText="Técnico">
+                                        <h:outputText
+                                                value="#{tiempoTecnicoPreventivo.tecnico.nombreCompleto}"/>
+                                        <h:outputText value="#{tiempoTecnicoPreventivo.subcontrata.nombre}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Tiempo">
+                                        <h:outputText value="#{tiempoTecnicoPreventivo.tiempo}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Precio">
+                                        <h:outputText value="#{articuloCtl.getNumeroString(tiempoTecnicoPreventivo.precio)}€"/>
+                                    </p:column>
+
+                                    <p:column headerText="Total">
+                                        <h:outputText value="#{articuloCtl.getNumeroString(tiempoTecnicoPreventivo.getTotal())}€"/>
+                                    </p:column>
+
+                                    <p:column headerText="Fecha">
+                                        <h:outputText value="#{tiempoTecnicoPreventivo.fecha}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy"
+                                                               type="localDateTime"></f:convertDateTime>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <f:facet name="footer">
+                                        <h:outputText value="Total: #{articuloCtl.getNumeroString(preventivo.sumaTiempos())}€">
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:dataTable>
+                            </p:panel>
+                        </p:dataScroller>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{articuloCtl.previsionPreventivos eq false}">
+                        <h:form>
+                            <p:commandButton process="@this" ajax="false" icon="fa fa-file-excel-o"
+                                             value="Exportar">
+                                <p:fileDownload value="#{articuloCtl.generarArchivoExcelCorrectivo()}">
+                                </p:fileDownload>
+                            </p:commandButton>
+                        </h:form>
+                        <!--                        <h:form>-->
+                        <!--                            <p:commandButton value="Exportar" ajax="false" process="@this">-->
+                        <!--                                <p:dataExporter target="tablaCorrectivos" type="xls"-->
+                        <!--                                                fileName="correctivos"></p:dataExporter>-->
+                        <!--                            </p:commandButton>-->
+                        <!--                        </h:form>-->
+                        <p:dataScroller value="#{articuloCtl.correctivasHechas}" var="correctivo" chunkSize="10">
+                            <p:panel style="background: #2e7bb8;margin-bottom: 10px">
+                                <p:panelGrid styleClass="ui-noborder" style="margin-top: 5px;font-size: 20px;color"
+                                             columns="3">
+                                    <h:outputText value="#{correctivo.fechaCreacion}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy"
+                                                           type="localDateTime"></f:convertDateTime>
+                                    </h:outputText>
+                                    <h:outputText value="#{correctivo.problema}"></h:outputText>
+                                    <h:outputText value="#{correctivo.actuacion}"></h:outputText>
+                                </p:panelGrid>
+                                <p:dataTable widgetVar="tablaArticulos"
+                                             value="#{correctivo.getListaBajas()}"
+                                             var="cantidadorden"
+                                             filterEvent="enter"
+                                             reflow="true"
+                                             resizableColumns="true"
+                                             sortBy="#{cantidadorden.bajaArticulo.fecha}"
+                                             rows="20"
+                                             paginator="false"
+                                             lazy="true"
+                                             emptyMessage="${txt.tablaVacia}">
+
+                                    <f:facet name="header">
+                                        <h:outputText value="Bajas artículos"/>
+                                    </f:facet>
+
+                                    <!--<editor-fold desc="columnas de la tabla">-->
+
+                                    <p:column headerText="Artículo">
+                                        <h:outputText value="#{cantidadorden.bajaArticulo.articulo.descripcion}"/>
+                                        <h:outputText value="#{cantidadorden.articuloSubcontrata.descripcion}"/>
+                                    </p:column>
+
+
+                                    <p:column headerText="Cantidad">
+                                        <h:outputText value="#{cantidadorden.cantidad}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Precio">
+                                        <h:outputText value="#{articuloCtl.getNumeroString(cantidadorden.precio)}€"/>
+                                    </p:column>
+
+                                    <p:column headerText="Total">
+                                        <h:outputText value="#{articuloCtl.getNumeroString(cantidadorden.getTotal())}€"/>
+                                    </p:column>
+
+                                    <p:column headerText="Fecha">
+                                        <h:outputText value="#{cantidadorden.bajaArticulo.fecha}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy"
+                                                               type="localDateTime"></f:convertDateTime>
+                                        </h:outputText>
+                                    </p:column>
+                                    <f:facet name="footer">
+                                        <h:outputText value="Total: #{articuloCtl.getNumeroString(correctivo.sumaBajasTotal())}€">
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:dataTable>
+                                <p:dataTable widgetVar="tablaTiempos"
+                                             value="#{correctivo.getListaTiempos()}"
+                                             var="tiempoTecnico"
+                                             filterEvent="enter"
+                                             reflow="true"
+                                             resizableColumns="true"
+                                             sortBy="#{tiempoTecnico.fecha}"
+                                             rows="20"
+                                             paginator="false"
+                                             lazy="true"
+                                             emptyMessage="${txt.tablaVacia}">
+
+                                    <f:facet name="header">
+                                        <h:outputText value="Tiempos empleados"/>
+                                    </f:facet>
+
+                                    <!--<editor-fold desc="columnas de la tabla">-->
+
+
+                                    <p:column headerText="Técnico">
+                                        <h:outputText value="#{tiempoTecnico.tecnico.nombreCompleto}"/>
+                                        <h:outputText value="#{tiempoTecnico.subcontrata.nombre}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Tiempo">
+                                        <h:outputText value="#{tiempoTecnico.tiempo}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Precio">
+                                        <h:outputText value="#{articuloCtl.getNumeroString(tiempoTecnico.precio)}€"/>
+                                    </p:column>
+
+                                    <p:column headerText="Total">
+                                        <h:outputText value="#{articuloCtl.getNumeroString(tiempoTecnico.getTotal())}€"/>
+                                    </p:column>
+
+                                    <p:column headerText="Fecha">
+                                        <h:outputText value="#{tiempoTecnico.fecha}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy"
+                                                               type="localDateTime"></f:convertDateTime>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <f:facet name="footer">
+                                        <h:outputText value="Total: #{articuloCtl.getNumeroString(correctivo.sumaTiempos())}€">
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:dataTable>
+                            </p:panel>
+                        </p:dataScroller>
+                    </h:panelGroup>
+                </p:panel>
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>
+</html>

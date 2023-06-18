@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:app="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:o="http://omnifaces.org/ui">
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <!--Carga de los ficheros de idioma-->
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.app.articulosubcontrata" var="articuloSubcontrataLbl"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{articuloSubcontrataCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <!--            <o:viewAction action="#{articuloSubcontrataCtl.comprobarAcceso}"/>-->
+            <o:viewParam name="debug" value="#{articuloSubcontrataCtl.modoDepuracion}"/>
+        </f:metadata>
+
+        <p:log rendered="#{articuloSubcontrataCtl.modoDepuracion}"/>
+
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-6 dashboard">
+                <div class="card">
+                    <h1>#{articuloSubcontrataLbl['formulario']}</h1>
+                    <h:form prepenId="false" id="articuloSubcontrataForm">
+                        <app:articuloSubcontrataForm entidad="#{articuloSubcontrataCtl.entidad}"
+                                           controlador="#{articuloSubcontrataCtl}"
+                                           widgetVarTbl="articuloSubcontrataTbl"/>
+                    </h:form>
+                </div>
+            </div>
+
+            <div class="ui-g-12 ui-lg-6 dashboard">
+                <div class="card">
+                    <h1>#{articuloSubcontrataLbl['listado']}</h1>
+                    <h:form>
+                        <app:articuloSubcontrataTbl tablemodel="#{articuloSubcontrataCtl.tablemodel}"
+                                          widgetVar="articuloSubcontrataTbl"
+                                          controlador="#{articuloSubcontrataCtl}"
+                                          onRowSelect="#{articuloSubcontrataCtl.cargarSeleccion}"
+                                          onRowSelectUpdate=":articuloSubcontrataForm"
+                                          exportable="true"/>
+                    </h:form>
+                </div>
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>
+</html>

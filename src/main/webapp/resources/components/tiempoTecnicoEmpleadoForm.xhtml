@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="entidad" type="com.joyero.app.tiempoTecnicoEmpleado.TiempoTecnicoEmpleado" required="true"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="false"/>
+        <composite:attribute name="readOnly" required="false" default="false"/>
+        <composite:attribute name="widgetVarTbl" required="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.tiempotecnicoempleado" var="tiempoTecnicoEmpleadoLbl"/>
+
+        <!--<editor-fold desc="botonera del formulario">-->
+        <p:toolbar>
+            <p:toolbarGroup styleClass="ui-inputgroup">
+                <p:commandButton title="#{txt.nuevo}" icon="fa fa-file-o"
+                                 actionListener="#{cc.attrs.controlador.nuevo()}" process="@this" update="@form"
+                                 resetValues="true"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"/>
+
+                <p:commandButton title="#{cc.attrs.controlador.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                 icon="fa fa-floppy-o" actionListener="#{cc.attrs.controlador.guardar()}"
+                                 process="@form"
+                                 update="@form"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"/>
+
+                <p:commandButton title="#{txt.eliminar}" icon="fa fa-trash-o"
+                                 actionListener="#{cc.attrs.controlador.eliminar()}" process="@this" update="@form"
+                                 oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();">
+                    <p:confirm header="#{txt.confirmacion}" message="#{txt.deseaEliminar}" icon="ui-icon-alert"/>
+                </p:commandButton>
+            </p:toolbarGroup>
+        </p:toolbar>
+        <!--</editor-fold>-->
+
+        <p:messages autoUpdate="false" showDetail="true" showSummary="false"/>
+
+        <p:outputLabel value="#{tiempoTecnicoEmpleadoLbl.externo}" for="@next"/>
+        <p:selectBooleanCheckbox value="#{cc.attrs.entidad.esSubcontrata}">
+            <p:ajax event="change" process="@this" update="@form"></p:ajax>
+        </p:selectBooleanCheckbox>
+        <p:message for="@previous"/>
+
+        <!--<editor-fold desc="controles del formulario">-->
+        <p:outputLabel rendered="#{cc.attrs.entidad.esSubcontrata eq false or cc.attrs.entidad.esSubcontrata eq null}" value="#{tiempoTecnicoEmpleadoLbl.tecnico}" for="@next"/>
+        <p:selectOneMenu required="true" rendered="#{cc.attrs.entidad.esSubcontrata eq false or cc.attrs.entidad.esSubcontrata eq null}" value="#{cc.attrs.entidad.tecnicoId}">
+            <f:selectItem  itemLabel="" itemValue=""></f:selectItem>
+            <f:selectItems value="#{cc.attrs.controlador.tecnicos}" var="tecnico" itemLabel="#{tecnico.nombreCompleto}" itemValue="#{tecnico.id}"></f:selectItems>
+            <p:ajax event="change" update="@form" process="@this" listener="#{cc.attrs.controlador.cargarPrecioTecnico()}"></p:ajax>
+        </p:selectOneMenu>
+        <p:message for="@previous"/>
+
+        <p:outputLabel rendered="#{cc.attrs.entidad.esSubcontrata eq true}" value="#{tiempoTecnicoEmpleadoLbl.subcontrata}" for="@next"/>
+        <p:selectOneMenu required="true" rendered="#{cc.attrs.entidad.esSubcontrata eq true}" value="#{cc.attrs.entidad.subcontrataId}">
+            <f:selectItem  itemLabel="" itemValue=""></f:selectItem>
+            <f:selectItems value="#{cc.attrs.controlador.subcontratas}" var="subcontrata" itemLabel="#{subcontrata.nombre}" itemValue="#{subcontrata.id}"></f:selectItems>
+        <p:ajax event="change" update="@form" process="@this" listener="#{cc.attrs.controlador.cargarPrecio()}"></p:ajax>
+        </p:selectOneMenu>
+        <p:message for="@previous"/>
+
+        <p:outputLabel value="#{tiempoTecnicoEmpleadoLbl.tiempo}" for="@next"/>
+        <p:inputNumber widgetVar="tiempo"
+                       id="tiempo"
+                       minValue="0"
+                       decimalPlaces="2"
+                       value="#{cc.attrs.entidad.tiempo}"/>
+        <p:message for="@previous"/>
+
+
+        <p:outputLabel rendered="#{cc.attrs.entidad.esSubcontrata eq true}" value="#{tiempoTecnicoEmpleadoLbl.precioHora}" for="@next"/>
+        <p:inputNumber rendered="#{cc.attrs.entidad.esSubcontrata eq true}" widgetVar="precioHora"
+                       id="precioHora"
+                       minValue="0"
+                       maxValue="100"
+                       decimalPlaces="2"
+                       value="#{cc.attrs.entidad.precio}"/>
+        <p:message for="@previous"/>
+
+
+
+        <p:outputLabel value="#{tiempoTecnicoEmpleadoLbl.fecha}" for="@next"/>
+        <p:datePicker widgetVar="fecha"
+                      id="fecha"
+                      value="#{cc.attrs.controlador.entidad.fecha}"
+                      pattern="dd-MM-yyyy"
+                      navigator="true"
+                      mask="true">
+        </p:datePicker>
+        <p:message for="@previous"/>
+
+
+        <p:outputLabel value="#{tiempoTecnicoEmpleadoLbl.observaciones}" for="@next"></p:outputLabel><br/>
+        <h:inputTextarea style="width: 100%" value="#{cc.attrs.entidad.observaciones}"></h:inputTextarea><br/>
+
+
+
+        <p:commandButton title="#{cc.attrs.controlador.modificarRegistro ?  txt.modificar : txt.guardar}"
+                         icon="fa fa-floppy-o"
+                         value="#{cc.attrs.controlador.modificarRegistro ?  txt.modificar : txt.guardar}"
+                         actionListener="#{cc.attrs.controlador.guardar()}" process="@form" update="@form"
+                         oncomplete="PF('#{cc.attrs.widgetVarTbl}').filter(); PF('#{cc.attrs.widgetVarTbl}').unselectAllRows();"
+                         style="width:50%; margin-left:25%;"/>
+    </composite:implementation>
+</h:body>
+
+</html>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://xmlns.jcp.org/jsf/composite" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui" xmlns:o="http://omnifaces.org/ui">
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="entidad" type="com.joyero.app.documentoarticulo.DocumentoArticulo"
+                             required="true"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="false"/>
+        <composite:attribute name="readOnly" required="false" default="false"/>
+        <composite:attribute name="widgetVarTbl" required="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.documentoarticulo" var="documentoarticuloLbl"/>
+
+        <!--<editor-fold desc="botonera del formulario">-->
+        <p:outputPanel rendered="#{articuloCtl.entidad.id ne null}"
+                       autoUpdate="true">
+            <p:toolbar>
+                <p:toolbarGroup align="left">
+                    <p:toolbarGroup align="left">
+                        <p:commandButton value="#{txt.nuevo}" icon="ui-icon-document"
+                                         actionListener="#{articuloCtl.nuevoDocumentoArticulo}"
+                                         process="@this" update="@widgetVar(datosDocumento)"
+                                         oncomplete="PF('documentoArticuloTbl').filter(); PF('documentoArticuloTbl').unselectAllRows();"/>
+
+                        <p:commandButton value="#{txt.eliminar}" icon="ui-icon-trash"
+                                         actionListener="#{articuloCtl.eliminarDocumentoArticulo}"
+                                         process="@this"
+                                         widgetVar="btnEliminarDoc"
+                                         update="@widgetVar(datosDocumento)"
+                                         oncomplete="PF('documentoArticuloTbl').filter(); PF('documentoArticuloTbl').unselectAllRows();">
+                        </p:commandButton>
+                    </p:toolbarGroup>
+                </p:toolbarGroup>
+            </p:toolbar>
+        </p:outputPanel>
+
+        <p:fieldset rendered="#{articuloCtl.entidad.id ne null}"
+                    widgetVar="datosDocumento">
+            <p:messages showDetail="true" showSummary="false"/>
+
+            <h:panelGroup styleClass="fieldRow">
+                <h:panelGroup styleClass="field">
+                    <p:messages for="@next" showDetail="true" showSummary="false"/>
+                    <p:fileUpload id="documentoArticulo" widgetVar="fileUploadArticulo"
+                                  listener="#{articuloCtl.handleFileUploadDocumentoArticulo}"
+                                  label="#{articuloLbl['examinar']}" cancelLabel="#{txt.cancelar}"
+                                  uploadLabel="#{txt.cargar}"
+                                  mode="advanced" dragDropSupport="true"
+                                  allowTypes="/(\.|\/)(doc|docx|pdf|jpg|txt|xls|xlsx)$/"
+                                  auto="true"
+                                  sizeLimit="100000000"
+                                  rendered="#{articuloCtl.documentoArticulo.id eq null}"
+                                  update="@widgetVar(datosDocumento) @widgetVar(documentoArticuloTbl)"
+                                  oncomplete="PF('documentoArticuloTbl').filter(); PF('documentoArticuloTbl').unselectAllRows();"/>
+
+                    <p:commandButton id="btnDescarga" value="Descargar"
+                                     icon="ui-icon-arrowthickstop-1-s" ajax="false"
+                                     process="@this"
+                                     rendered="#{articuloCtl.documentoArticulo.id ne null}">
+
+                        <p:fileDownload
+                                value="#{articuloCtl.descargarDocumentoArticulo()}"/>
+                    </p:commandButton>
+                </h:panelGroup>
+            </h:panelGroup>
+
+
+        </p:fieldset>
+    </composite:implementation>
+</h:body>
+
+</html>

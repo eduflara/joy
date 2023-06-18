@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:app="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:o="http://omnifaces.org/ui">
+
+<ui:composition template="/resources/omega-layout/template.xhtml">
+
+    <!--Carga de los ficheros de idioma-->
+    <ui:define name="head">
+        <f:loadBundle basename="com.joyero.app.proveedor" var="proveedorLbl"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:metadata>
+            <!--Este método se ejecuta siempre en la carga de la página -->
+            <o:viewAction action="#{ordenMantenimientoCtl.onLoad}"/>
+            <!--Este método comprueba si el usuario tiene acceso a la página -->
+            <!--            <o:viewAction action="#{ordenMantenimientoCtl.comprobarAcceso}"/>-->
+            <o:viewParam name="debug" value="#{ordenMantenimientoCtl.modoDepuracion}"/>
+        </f:metadata>
+
+        <p:log rendered="#{ordenMantenimientoCtl.modoDepuracion}"/>
+
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-12 dashboard">
+                <div class="card">
+                    <h1>Filtros</h1>
+                    <h:outputText value="Semana en curso: #{ordenMantenimientoCtl.semanaEnCurso}"></h:outputText>
+                    <h:form prepenId="false" id="ordenForm">
+                        <p:messages></p:messages>
+                        <app:ordenMantenimientoFiltros entidad="#{ordenMantenimientoCtl.entidad}"
+                                                       controlador="#{ordenMantenimientoCtl}"
+                                                       widgetVarTbl="ordenTbl"/>
+                    </h:form>
+                </div>
+
+                <div class="card">
+                    <h1>#{proveedorLbl['listado']}</h1>
+                    <h:form>
+                        <app:ordenMantenimientoTbl tablemodel="#{ordenMantenimientoCtl.tablemodel}"
+                                                   widgetVar="ordenTbl"
+                                                   controlador="#{ordenMantenimientoCtl}"
+                                                   onRowSelect="#{ordenMantenimientoCtl.cargarSeleccion}"
+                                                   onRowSelectUpdate=":ordenCorrectivo :ordenPreventivo :panelOrden :ordenNoAveria @widgetVar(tiempoEmpleado)"
+                                                   exportable="true"/>
+                    </h:form>
+                </div>
+                <div class="ui-g-12 ui-lg-6 dashboard">
+                    <div class="card" id="formularioOrden">
+                        <p:panel widgetVar="panelOrden">
+                            <h1>#{proveedorLbl['formulario']}</h1>
+                            <h:panelGroup layout="block" id="panelOrden">
+                                <h:form rendered="#{ordenMantenimientoCtl.origen eq 'c' or ordenMantenimientoCtl.entidad.tipoOrden eq 'c'}"
+                                        prepenId="false" id="ordenCorrectivo">
+
+                                    <app:ordenCorrectivoForm entidad="#{ordenCorrectivoCtl.entidad}"
+                                                             controlador="#{ordenCorrectivoCtl}"
+                                                             widgetVarTbl="ordenTbl"/>
+                                </h:form>
+
+                                <h:form rendered="#{ordenMantenimientoCtl.origen eq 'p' or ordenMantenimientoCtl.entidad.tipoOrden eq 'p'}"
+                                        prepenId="false" id="ordenPreventivo">
+
+                                    <app:ordenPreventivoForm entidad="#{ordenPreventivoCtl.entidad}"
+                                                             controlador="#{ordenPreventivoCtl}"
+                                                             widgetVarTbl="ordenTbl"/>
+                                </h:form>
+
+                                <h:form rendered="#{ordenMantenimientoCtl.origen eq 'n' or ordenMantenimientoCtl.entidad.tipoOrden eq 'n'}"
+                                        prepenId="false" id="ordenNoAveria">
+                                    <p:messages></p:messages>
+                                    <app:ordenMantenimientoNoAveriaForm
+                                            entidad="#{ordenMantenimientoNoAveriaCtl.entidad}"
+                                            controlador="#{ordenMantenimientoNoAveriaCtl}"
+                                            widgetVarTbl="ordenTbl"/>
+                                </h:form>
+                            </h:panelGroup>
+                        </p:panel>
+                    </div>
+                </div>
+
+                <div class="ui-g-12 ui-lg-6 dashboard">
+                    <p:tabView widgetVar="tiempoEmpleado">
+                        <p:tab title="Tiempo empleado">
+                            <div class="card">
+                                <h1>Tiempo</h1>
+                                <h:form prepenId="false" id="tecnicoForm">
+                                    <div class="fieldset ui-fluid">
+                                        <app:tiempoTecnicoEmpleadoForm entidad="#{tiempoTecnicoEmpleadoCtl.entidad}"
+                                                                       controlador="#{tiempoTecnicoEmpleadoCtl}"
+                                                                       widgetVarTbl="tiempoTecnicoTbl"/>
+                                    </div>
+                                </h:form>
+                                <h:form>
+                                    <app:tiempoTecnicoEmpleadoTbl
+                                            tablemodel="#{ordenMantenimientoCtl.tiempoTecnicoEmpleadoTbl}"
+                                            widgetVar="tiempoTecnicoTbl"
+                                            onRowSelect="#{tiempoTecnicoEmpleadoCtl.cargarSeleccion}"
+                                            onRowSelectUpdate="@widgetVar(tiempoEmpleado)"
+                                            exportable="false"
+                                            controlador="#{tiempoTecnicoEmpleadoCtl}"></app:tiempoTecnicoEmpleadoTbl>
+                                </h:form>
+                            </div>
+                        </p:tab>
+                        <p:tab title="Material empleado">
+                            <div class="card">
+                                <h1>Material</h1>
+                                <h:form id="cantidadOrdenForm">
+                                    <app:cantidadOrdenForm entidad="#{cantidadOrdenCtl.entidad}"
+                                                           controlador="#{cantidadOrdenCtl}"
+                                                           widgetVarTbl="cantidadOrdenTbl"/>
+                                </h:form>
+                                <h:form>
+                                    <app:cantidadOrdenTbl tablemodel="#{ordenMantenimientoCtl.cantidadOrdenTbl}"
+                                                          widgetVar="cantidadOrdenTbl"
+                                                          controlador="#{cantidadOrdenCtl}"
+                                                          onRowSelect="#{cantidadOrdenCtl.cargarSeleccion()}"
+                                                          onRowSelectUpdate="@widgetVar(tiempoEmpleado)"
+                                                          exportable="true"/>
+                                </h:form>
+                            </div>
+                        </p:tab>
+                        <p:tab title="Documentos">
+                            <p:panel prepenId="false" id="documentos">
+                                <div style="margin-top: 10px" class="fieldset">
+                                    <div>
+                                        <h:form>
+                                            <p:outputPanel rendered="#{ordenMantenimientoCtl.entidad.id ne null}"
+                                                           autoUpdate="true">
+                                                <p:toolbar>
+                                                    <p:toolbarGroup align="left">
+                                                        <p:toolbarGroup align="left">
+                                                            <p:commandButton value="#{txt.nuevo}"
+                                                                             icon="ui-icon-document"
+                                                                             actionListener="#{ordenMantenimientoCtl.nuevoDocumentoOrden}"
+                                                                             process="@this"
+                                                                             update="@widgetVar(datosDocumento)"
+                                                                             oncomplete="PF('documentoPedidoTbl').filter(); PF('documentoPedidoTbl').unselectAllRows();"/>
+
+                                                            <p:commandButton value="#{txt.eliminar}"
+                                                                             icon="ui-icon-trash"
+                                                                             actionListener="#{ordenMantenimientoCtl.eliminarDocumentoOrden}"
+                                                                             process="@this"
+                                                                             widgetVar="btnEliminarDoc"
+                                                                             update="@widgetVar(datosDocumento)"
+                                                                             oncomplete="PF('documentoPedidoTbl').filter(); PF('documentoPedidoTbl').unselectAllRows();">
+                                                            </p:commandButton>
+                                                        </p:toolbarGroup>
+                                                    </p:toolbarGroup>
+                                                </p:toolbar>
+                                            </p:outputPanel>
+
+                                            <p:fieldset rendered="#{ordenMantenimientoCtl.entidad.id ne null}"
+                                                        widgetVar="datosDocumento">
+                                                <p:selectBooleanCheckbox style="margin-bottom: 8px"
+                                                                         value="#{ordenMantenimientoCtl.albaran}"
+                                                                         itemLabel="Albarán">
+                                                    <p:ajax update="@this" process="@this"/>
+                                                </p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox style="margin-bottom: 8px"
+                                                                         value="#{ordenMantenimientoCtl.factura}"
+                                                                         itemLabel="Factura">
+                                                    <p:ajax update="@this" process="@this"/>
+                                                </p:selectBooleanCheckbox>
+                                                <h:panelGroup styleClass="fieldRow">
+                                                    <h:panelGroup styleClass="field">
+                                                        <p:messages for="@next" showDetail="true" showSummary="false"/>
+                                                        <p:fileUpload id="documentoOrden"
+                                                                      widgetVar="fileUploadArticulo"
+                                                                      listener="#{ordenMantenimientoCtl.handleFileUploadDocumentoOrden}"
+                                                                      process="@form"
+                                                                      label="#{articuloLbl['examinar']}"
+                                                                      cancelLabel="#{txt.cancelar}"
+                                                                      uploadLabel="#{txt.cargar}"
+                                                                      mode="advanced" dragDropSupport="true"
+                                                                      allowTypes="/(\.|\/)(doc|docx|pdf|jpg|txt|xls|xlsx)$/"
+                                                                      auto="true"
+                                                                      sizeLimit="100000000"
+                                                                      rendered="#{ordenMantenimientoCtl.documentoOrden.id eq null}"
+                                                                      update="@widgetVar(datosDocumento) @widgetVar(documentoPedidoTbl)"
+                                                                      oncomplete="PF('documentoPedidoTbl').filter(); PF('documentoPedidoTbl').unselectAllRows();"/>
+
+                                                        <p:commandButton id="btnDescarga" value="Descargar"
+                                                                         icon="ui-icon-arrowthickstop-1-s" ajax="false"
+                                                                         process="@this"
+                                                                         rendered="#{ordenMantenimientoCtl.documentoOrden.id ne null}">
+
+                                                            <p:fileDownload
+                                                                    value="#{ordenMantenimientoCtl.descargarDocumentoOrden()}"/>
+                                                        </p:commandButton>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+
+
+                                            </p:fieldset>
+
+                                        </h:form>
+                                    </div>
+                                    <div id="rightcolumn">
+                                        <h:form>
+                                            <p:messages></p:messages>
+                                            <app:documentoOrdenTbl
+                                                    tablemodel="#{ordenMantenimientoCtl.documentoOrdenTbl}"
+                                                    widgetVar="documentoPedidoTbl"
+                                                    controlador="#{ordenMantenimientoCtl}"
+                                                    onRowSelect="#{ordenMantenimientoCtl.seleccionarDocumentoOrden()}"
+                                                    onRowSelectUpdate="@widgetVar(datosDocumento) @widgetVar(btnEliminarDoc)"
+                                                    exportable="true"/>
+                                        </h:form>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </p:tab>
+                    </p:tabView>
+                </div>
+            </div>
+
+        </div>
+    </ui:define>
+    <ui:define name="dialog">
+        <p:dialog header="#{ordenCorrectivoLbl.averias}" width="80%" modal="true" widgetVar="averiasDlg">
+            <h:form>
+                <app:averiaTbl tablemodel="#{averiaCtl.tablemodel}"
+                               widgetVar="averiaTbl"
+                               controlador="#{averiaCtl}"
+                               onRowSelect="#{ordenCorrectivoCtl.seleccionarAveria()}"
+                               onRowSelectUpdate="@this @widgetVar(panelOrden)"
+                               onRowSelectComplete="PF('averiasDlg').hide()"
+                               exportable="true"/>
+            </h:form>
+        </p:dialog>
+        <p:dialog header="#{bajaArticuloLbl.bajas}" width="80%" modal="true" widgetVar="bajasDlg">
+            <h:form>
+                <app:bajaArticuloTbl tablemodel="#{bajaArticuloCtl.tablemodel}"
+                                     widgetVar="bajaArticuloTbl"
+                                     controlador="#{bajaArticuloCtl}"
+                                     onRowSelect="#{ordenCorrectivoCtl.aniadirCantidadBaja()}"
+                                     onRowSelectUpdate="@widgetVar(baja)"
+                                     onRowSelectComplete="PF('bajasDlg').hide()"
+                                     exportable="true"/>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="#{bajaVelocidadLbl.bajadaVelocidad}" width="80%" modal="true" widgetVar="bajaVelocidadDlg">
+            <h:form>
+                <app:bajaVelocidadTbl tablemodel="#{bajaVelocidadCtl.tablemodel}"
+                                      widgetVar="bajaArticuloTbl"
+                                      controlador="#{bajaVelocidadCtl}"
+                                      onRowSelect="#{ordenCorrectivoCtl.seleccionarBajaVelocidad()}"
+                                      onRowSelectUpdate="@this @widgetVar(panelOrden)"
+                                      onRowSelectComplete="PF('bajaVelocidadDlg').hide()"
+                                      exportable="true"/>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="#{bajaArticuloLbl.articulosub}" width="80%" modal="true" widgetVar="articulosSubcontrataDlg">
+            <h:form>
+                <app:articuloSubcontrataTbl tablemodel="#{cantidadOrdenCtl.articuloSubcontrataTbl}"
+                                            widgetVar="articuloSubcontrataTbl"
+                                            controlador="#{cantidadOrdenCtl}"
+                                            onRowSelect="#{cantidadOrdenCtl.seleccionarArticuloSubcontrata()}"
+                                            onRowSelectUpdate="@widgetVar(articuloSubcontrata)"
+                                            onRowSelectComplete="PF('articulosSubcontrataDlg').hide()"
+                                            exportable="true"/>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="#{ordenCorrectivoLbl.confirmacion}" width="30%" modal="true" widgetVar="confirmacionDlg"
+                  id="confirmacionDlg">
+            <h:form>
+                <h:outputText
+                        value="Se va a finalizar la orden de trabajo, ¿desea crear un trabajo pendiente?"></h:outputText>
+                <p></p>
+                <p:commandButton value="Finalizar"
+                                 actionListener="#{ordenPreventivoCtl.finalizarOrden()}"  update="@widgetVar(panelOrden) @widgetVar(ordenTbl)" oncomplete="PF('confirmacionDlg').hide()"></p:commandButton>
+                <p:commandButton value="Generar pendiente"
+                                 actionListener="#{ordenMantenimientoCtl.finalizarPreventivoYCrear()}"  update="@widgetVar(panelOrden) @widgetVar(ordenTbl)" oncomplete="PF('confirmacionDlg').hide()"></p:commandButton>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Esperando confirmación" width="30%" modal="true" widgetVar="confirmacionCorrectivoDlg"
+                  id="confirmacionCorrectivoDlg">
+            <h:form>
+                <h:outputText
+                        value="Se va a finalizar la orden de trabajo, ¿desea crear un trabajo pendiente?"></h:outputText>
+                <p></p>
+                <p:commandButton value="Finalizar"
+                                 actionListener="#{ordenCorrectivoCtl.finalizarOrden()}"  update="@widgetVar(panelOrden) @widgetVar(ordenTbl)" oncomplete="PF('confirmacionCorrectivoDlg').hide()"></p:commandButton>
+                <p:commandButton value="Generar pendiente"
+                                 actionListener="#{ordenCorrectivoCtl.finalizarOrdenYCrear()}" update="@widgetVar(panelOrden) @widgetVar(ordenTbl)" oncomplete="PF('confirmacionCorrectivoDlg').hide()"></p:commandButton>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>
+</html>

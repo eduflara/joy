@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://java.sun.com/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="widgetVar" required="yes"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="true"/>
+        <composite:attribute name="tablemodel" type="com.joyero.base.jsf.TableModelEntidad" required="true"/>
+        <composite:attribute name="onRowSelect" required="false" method-signature="void listerner()"/>
+        <composite:attribute name="onRowSelectUpdate" required="false"/>
+        <composite:attribute name="onRowSelectComplete" required="false"/>
+        <composite:attribute name="exportable" required="false" default="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.zona" var="zonaLbl"/>
+
+        <p:dataTable widgetVar="#{cc.attrs.widgetVar}"
+                     value="#{cc.attrs.tablemodel}"
+                     id="#{cc.attrs.widgetVar}"
+                     var="zona"
+                     filterEvent="enter"
+                     reflow="true"
+                     resizableColumns="true"
+                     sortBy="#{zona.id}"
+                     rows="20"
+                     selectionMode="single"
+                     selection="#{cc.attrs.tablemodel.seleccion}"
+                     paginator="true"
+                     paginatorPosition="bottom"
+                     lazy="true"
+                     currentPageReportTemplate="(${txt.registros}: {startRecord} - {endRecord} ${txt.de} {totalRecords}, ${txt.pagina}: {currentPage} ${txt.de} {totalPages})"
+                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}"
+                     rowsPerPageTemplate="10,20,25"
+                     emptyMessage="${txt.tablaVacia}">
+
+            <f:facet name="header">
+
+            </f:facet>
+
+            <!--<editor-fold desc="columnas de la tabla">-->
+            <p:column headerText="ID" rendered="#{cc.attrs.controlador.modoDepuracion}" width="50">
+                <h:outputText value="#{zona.id}"/>
+            </p:column>
+
+            <p:column headerText="#{zonaLbl.codigo}"
+                      filterBy="#{zona.codigo}"
+                      sortBy="#{zona.codigo}">
+                <h:outputText value="#{zona.codigo}"/>
+            </p:column>
+
+            <p:column headerText="#{zonaLbl.descripcion}"
+                      filterBy="#{zona.descripcion}"
+                      sortBy="#{zona.descripcion}">
+                <h:outputText value="#{zona.descripcion}"/>
+            </p:column>
+            
+            <p:column headerText="#{zonaLbl.zonaSuperior}"
+                      filterBy="#{zona.zonaSuperior.codigo}"
+                      sortBy="#{zona.zonaSuperior.codigo}">
+                <h:outputText value="#{zona.zonaSuperior.codigo}"/>
+            </p:column>
+            
+
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="eventos ajax de la tabla">-->
+            <p:ajax event="rowSelect" resetValues="true" update="#{cc.attrs.onRowSelectUpdate}"
+                    listener="#{cc.attrs.onRowSelect}"
+                    oncomplete="#{cc.attrs.onRowSelectComplete}"/>
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="exportaciones de la tabla">-->
+            <c:if test="#{cc.attrs.exportable}">
+                <f:facet name="{Exporters}">
+                    <div style="float:right;padding-top: 5px;">
+                        <h:commandLink>
+                            <p:graphicImage name="images/pdf.png" library="omega-layout" width="20"/>
+                            <p:dataExporter encoding="CP1254" type="pdf" target="@widgetVar(#{cc.attrs.widget})"
+                                            fileName="zona"/>
+                        </h:commandLink>
+
+                        <h:commandLink>
+                            <p:graphicImage name="images/excel.png" library="omega-layout" width="20"/>
+                            <p:dataExporter type="xls" target="@widgetVar(#{cc.attrs.widget})" fileName="zona"/>
+                        </h:commandLink>
+                    </div>
+                </f:facet>
+            </c:if>
+            <!--</editor-fold>-->
+        </p:dataTable>
+
+    </composite:implementation>
+</h:body>
+</html>

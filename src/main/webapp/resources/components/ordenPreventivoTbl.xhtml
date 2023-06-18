@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://java.sun.com/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="widgetVar" required="yes"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="true"/>
+        <composite:attribute name="tablemodel" type="com.joyero.base.jsf.TableModelEntidad" required="true"/>
+        <composite:attribute name="onRowSelect" required="false" method-signature="void listerner()"/>
+        <composite:attribute name="onRowSelectUpdate" required="false"/>
+        <composite:attribute name="onRowSelectComplete" required="false"/>
+        <composite:attribute name="exportable" required="false" default="false"/>
+        <composite:attribute name="verProblema" required="false" default="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.ordenPreventivo" var="ordenPreventivoLbl"/>
+
+        <p:dataTable widgetVar="#{cc.attrs.widgetVar}"
+                     value="#{cc.attrs.tablemodel}"
+                     id="#{cc.attrs.widgetVar}"
+                     var="ordenpreventivo"
+                     filterEvent="enter"
+                     reflow="true"
+                     resizableColumns="true"
+                     sortBy="#{ordenpreventivo.id}"
+                     rows="20"
+                     selectionMode="single"
+                     selection="#{cc.attrs.tablemodel.seleccion}"
+                     paginator="true"
+                     paginatorPosition="bottom"
+                     lazy="true"
+                     currentPageReportTemplate="(${txt.registros}: {startRecord} - {endRecord} ${txt.de} {totalRecords}, ${txt.pagina}: {currentPage} ${txt.de} {totalPages})"
+                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}"
+                     rowsPerPageTemplate="10,20,25"
+                     emptyMessage="${txt.tablaVacia}">
+
+            <f:facet name="header">
+
+            </f:facet>
+
+            <!--<editor-fold desc="columnas de la tabla">-->
+            <p:column headerText="ID" rendered="#{cc.attrs.controlador.modoDepuracion}" width="50">
+                <h:outputText value="#{ordenpreventivo.id}"/>
+            </p:column>
+
+            <p:column headerText="#{ordenPreventivoLbl.fecha}"
+                      filterBy="#{ordenpreventivo.fechaCreacion}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['fechaCreacion']}"
+                      sortBy="#{ordenpreventivo.fechaCreacion}">
+                <h:outputText value="#{ordenpreventivo.fechaCreacion}">
+                    <f:convertDateTime pattern="dd/MM/yyyy" type="localDateTime" />
+                </h:outputText>
+            </p:column>
+
+
+            <p:column headerText="#{ordenPreventivoLbl.tocaba}"
+                      filterBy="#{ordenpreventivo.semanaLeTocaba}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['semanaLeTocaba']}"
+                      sortBy="#{ordenpreventivo.semanaLeTocaba}">
+                <h:outputText value="#{ordenpreventivo.semanaLeTocaba}"/>
+            </p:column>
+
+            <p:column headerText="#{ordenPreventivoLbl.notificada}"
+                      filterBy="#{ordenpreventivo.semana}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['semana']}"
+                      sortBy="#{ordenpreventivo.semana}">
+                <h:outputText value="#{ordenpreventivo.semana}"/>
+            </p:column>
+
+            <p:column headerText="#{ordenPreventivoLbl.estado}"
+                      filterBy="#{ordenpreventivo.estadoOrden.descripcion}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['estadoOrden.descripcion']}"
+                      sortBy="#{ordenpreventivo.estadoOrden.descripcion}">
+                <h:outputText value="#{ordenpreventivo.estadoOrden.descripcion}"/>
+            </p:column>
+
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="eventos ajax de la tabla">-->
+            <p:ajax event="rowSelect" resetValues="true" update="#{cc.attrs.onRowSelectUpdate}"
+                    listener="#{cc.attrs.onRowSelect}"
+                    oncomplete="#{cc.attrs.onRowSelectComplete}"/>
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="exportaciones de la tabla">-->
+            <c:if test="#{cc.attrs.exportable}">
+                <f:facet name="{Exporters}">
+                    <div style="float:right;padding-top: 5px;">
+                        <h:commandLink>
+                            <p:graphicImage name="images/pdf.png" library="omega-layout" width="20"/>
+                            <p:dataExporter encoding="CP1254" type="pdf" target="@widgetVar(#{cc.attrs.widget})"
+                                            fileName="ordenpreventivo"/>
+                        </h:commandLink>
+
+                        <h:commandLink>
+                            <p:graphicImage name="images/excel.png" library="omega-layout" width="20"/>
+                            <p:dataExporter type="xls" target="@widgetVar(#{cc.attrs.widget})"
+                                            fileName="ordenpreventivo"/>
+                        </h:commandLink>
+                    </div>
+                </f:facet>
+            </c:if>
+            <!--</editor-fold>-->
+        </p:dataTable>
+
+    </composite:implementation>
+</h:body>
+</html>

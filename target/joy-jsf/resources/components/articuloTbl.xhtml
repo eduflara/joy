@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:composite="http://java.sun.com/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+<h:body>
+    <composite:interface>
+        <composite:attribute name="widgetVar" required="yes"/>
+        <composite:attribute name="controlador" type="com.joyero.base.jsf.Controlador" required="true"/>
+        <composite:attribute name="tablemodel" type="com.joyero.base.jsf.TableModelEntidad" required="true"/>
+        <composite:attribute name="onRowSelect" required="false" method-signature="void listerner()"/>
+        <composite:attribute name="onRowSelectUpdate" required="false"/>
+        <composite:attribute name="onRowSelectComplete" required="false"/>
+        <composite:attribute name="exportable" required="false" default="false"/>
+    </composite:interface>
+
+    <composite:implementation>
+        <f:loadBundle basename="com.joyero.app.articulo" var="articuloLbl"/>
+        <h:commandLink value="Exportar">
+            <p:dataExporter type="xls" target="@widgetVar(articuloTbl)" postProcessor="#{articuloCtl.postProcessXLS}" fileName="articulos"/>
+        </h:commandLink>
+        <p:dataTable widgetVar="#{cc.attrs.widgetVar}"
+                     value="#{cc.attrs.tablemodel}"
+                     id="#{cc.attrs.widgetVar}"
+                     var="articulo"
+                     filterEvent="enter"
+                     reflow="true"
+                     resizableColumns="true"
+                     scrollable="true"
+                     resizeMode="true"
+                     sortBy="#{articulo.id}"
+                     rows="20"
+                     selectionMode="single"
+                     selection="#{cc.attrs.tablemodel.seleccion}"
+                     paginator="true"
+                     paginatorPosition="bottom"
+                     lazy="true"
+                     currentPageReportTemplate="(${txt.registros}: {startRecord} - {endRecord} ${txt.de} {totalRecords}, ${txt.pagina}: {currentPage} ${txt.de} {totalPages})"
+                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}"
+                     rowsPerPageTemplate="10,20,25"
+                     emptyMessage="${txt.tablaVacia}">
+
+            <f:facet name="header">
+
+            </f:facet>
+
+            <!--<editor-fold desc="columnas de la tabla">-->
+            <p:column headerText="ID" rendered="#{cc.attrs.controlador.modoDepuracion}" width="50">
+                <h:outputText value="#{entidad.id}"/>
+            </p:column>
+
+            <p:column headerText="#{articuloLbl.codigo}" width="80"
+                      filterBy="#{articulo.codigo}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['codigo']}"
+                      sortBy="#{articulo.codigo}">
+                <h:outputText value="#{articulo.codigo}"/>
+            </p:column>
+
+            <p:column headerText="#{articuloLbl.descripcion}" width="300"
+                      filterBy="#{articulo.descripcion}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['descripcion']}"
+                      sortBy="#{articulo.descripcion}">
+                <h:outputText value="#{articulo.descripcion}"/>
+            </p:column>
+
+<!--            <p:column headerText="#{articuloLbl.stockMinimo}" width="30"-->
+<!--                      filterBy="#{articulo.stockMinimo}"-->
+<!--                      filterValue="#{cc.attrs.tablemodel.filtros['stockMinimo']}"-->
+<!--                      sortBy="#{articulo.stockMinimo}">-->
+<!--                <h:outputText value="#{articulo.stockMinimo}"/>-->
+<!--            </p:column>-->
+
+<!--            <p:column headerText="#{articuloLbl.stockMaximo}" width="30"-->
+<!--                      filterBy="#{articulo.stockMaximo}"-->
+<!--                      filterValue="#{cc.attrs.tablemodel.filtros['stockMaximo']}"-->
+<!--                      sortBy="#{articulo.stockMaximo}">-->
+<!--                <h:outputText value="#{articulo.stockMaximo}"/>-->
+<!--            </p:column>-->
+
+<!--            <p:column headerText="#{articuloLbl.fechaAlta}"-->
+<!--                      filterBy="#{articulo.fechaAlta}"-->
+<!--                      filterValue="#{cc.attrs.tablemodel.filtros['fechaAlta']}"-->
+<!--                      sortBy="#{articulo.fechaAlta}">-->
+<!--                <h:outputText value="#{articulo.fechaAlta}">-->
+<!--                    <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />-->
+<!--                </h:outputText>-->
+<!--            </p:column>-->
+
+<!--            <p:column headerText="#{articuloLbl.unidad}"-->
+<!--                      filterBy="#{articulo.unidad.unidad}"-->
+<!--                      filterValue="#{cc.attrs.tablemodel.filtros['unidad']}"-->
+<!--                      sortBy="#{articulo.unidad.unidad}">-->
+<!--                <h:outputText value="#{articulo.unidad.descripcion}"/>-->
+<!--            </p:column>-->
+
+            <p:column headerText="#{articuloLbl.ubicacion}" width="50"
+                      filterBy="#{articulo.ubicacion.descripcion}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['ubicacion.descripcion']}"
+                      sortBy="#{articulo.unidad.ubicacion.descripcion}">
+                <h:outputText value="#{articulo.ubicacion.descripcion}"/>
+            </p:column>
+
+            <p:column headerText="#{articuloLbl.seccion}" width="150"
+                      filterBy="#{articulo.ubicacion.seccion.descripcion}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['ubicacion.seccion.descripcion']}"
+                      sortBy="#{articulo.ubicacion.seccion.descripcion}">
+                <h:outputText value="#{articulo.ubicacion.seccion.descripcion}"/>
+            </p:column>
+
+
+            <p:column sorter="number" headerText="#{articuloLbl.cantidad}" width="80"
+                      filterBy="#{articulo.cantidad}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['cantidad']}"
+                      sortBy="#{articulo.cantidad}">
+
+                <h:outputText value="#{articulo.cantidad}">
+
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="#{articuloLbl.coste}" width="80"
+                      filterBy="#{articulo.coste}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['coste']}"
+                      sortBy="#{articulo.coste}">
+                <h:outputText value="#{articulo.coste}">
+
+                </h:outputText>
+
+            </p:column>
+
+<!--            <p:column headerText="#{articuloLbl.coste}"-->
+<!--                      filterBy="#{articulo.coste}"-->
+<!--                      filterValue="#{cc.attrs.tablemodel.filtros['coste']}"-->
+<!--                      sortBy="#{articulo.coste}">-->
+<!--                <h:outputText value="#{articulo.coste}"/>-->
+<!--            </p:column>-->
+
+
+
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="eventos ajax de la tabla">-->
+            <p:ajax event="rowSelect" resetValues="true" update="#{cc.attrs.onRowSelectUpdate}"
+                    listener="#{cc.attrs.onRowSelect}"
+                    oncomplete="#{cc.attrs.onRowSelectComplete}"/>
+            <!--</editor-fold>-->
+
+            <!--<editor-fold desc="exportaciones de la tabla">-->
+            <c:if test="#{cc.attrs.exportable}">
+                <f:facet name="{Exporters}">
+                    <div style="float:right;padding-top: 5px;">
+                        <h:commandLink>
+                            <p:graphicImage name="images/pdf.png" library="omega-layout" width="20"/>
+                            <p:dataExporter encoding="CP1254" type="pdf" target="@widgetVar(#{cc.attrs.widget})"
+                                            fileName="carro"/>
+                        </h:commandLink>
+
+                        <h:commandLink>
+                            <p:graphicImage name="images/excel.png" library="omega-layout" width="20"/>
+                            <p:dataExporter type="xls" target="@widgetVar(#{cc.attrs.widget})" fileName="carro"/>
+                        </h:commandLink>
+                    </div>
+                </f:facet>
+            </c:if>
+            <!--</editor-fold>-->
+        </p:dataTable>
+
+    </composite:implementation>
+</h:body>
+</html>
