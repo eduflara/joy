@@ -7,7 +7,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
-@PropertySource("file:c:/config/joy.properties")
+@PropertySource("file:c:/sumainfo/config/joy.properties")
 public class Config {
 
     @Autowired

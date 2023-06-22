@@ -76,16 +76,16 @@
 
                 <p:outputLabel value="Mercado" for="@next"></p:outputLabel>
                 <p:selectOneMenu id="mercadoSelector" widgetVar="mercadoSelector"
-                                 value="#{contratoCtl.entidad.mercado}">
+                                 value="#{contratoCtl.codigoMercado}">
                     <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
-                    <f:selectItem itemLabel="Mercado Secundario" itemValue="mercadosecundario"/>
+                    <f:selectItems value="#{contratoCtl.dameMercados()}" var="mercado" itemLabel="#{mercado.descripcion}" itemValue="#{mercado.codigo}"/>
                 </p:selectOneMenu>
 
                 <p:outputLabel value="Tipo Contrato" for="@next"></p:outputLabel>
                 <p:selectOneMenu id="tipoContratoSelector" widgetVar="tipoContratoSelector"
-                                 value="#{contratoCtl.entidad.tipocontrato}">
+                                 value="#{contratoCtl.codigoTipoContrato}">
                     <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
-                    <f:selectItem itemLabel="Tasacion" itemValue="tasacion"/>
+                    <f:selectItems value="#{contratoCtl.dameTiposContrato()}" var="tipoContrato" itemLabel="#{tipoContrato.descripcion}" itemValue="#{tipoContrato.codigo}"/>
                 </p:selectOneMenu>
 
                 <p:outputLabel value="Cliente" for="@next"></p:outputLabel>

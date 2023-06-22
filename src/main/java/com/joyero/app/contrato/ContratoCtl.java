@@ -1,5 +1,7 @@
 package com.joyero.app.contrato;
 
+import com.joyero.app.Mercado;
+import com.joyero.app.TipoContrato;
 import com.joyero.app.cliente.Cliente;
 import com.joyero.app.cliente.ClienteRest;
 import com.joyero.base.jasperreports.JasperReportClientRest;
@@ -39,6 +41,8 @@ public class ContratoCtl extends Controlador<Contrato, Long> {
 
     private Long idCliente;
 
+    private String codigoMercado;
+    private String codigoTipoContrato;
 
     @Autowired
     private ControladorSesion controladorSesion;
@@ -85,6 +89,15 @@ public class ContratoCtl extends Controlador<Contrato, Long> {
 
     @Override
     public void preGuardar() {
+        if (idCliente != null) {
+            this.entidad.setClienteId(idCliente);
+        }
+        if (codigoMercado != null) {
+            this.entidad.setMercado(Mercado.getMercado(codigoMercado));
+        }
+        if (codigoTipoContrato != null) {
+            this.entidad.setTipoContrato(TipoContrato.getTipoContrato(codigoTipoContrato));
+        }
     }
 
     @Override
@@ -119,5 +132,29 @@ public class ContratoCtl extends Controlador<Contrato, Long> {
         this.idCliente = idCliente;
     }
 
-    //endregion
+    public List<Mercado> dameMercados() {
+        return Mercado.getMercados();
+    }
+
+    public String getCodigoMercado() {
+        return codigoMercado;
+    }
+
+    public void setCodigoMercado(String codigoMercado) {
+        this.codigoMercado = codigoMercado;
+    }
+
+    public String getCodigoTipoContrato() {
+        return codigoTipoContrato;
+    }
+
+    public void setCodigoTipoContrato(String codigoTipoContrato) {
+        this.codigoTipoContrato = codigoTipoContrato;
+    }
+
+    public List<TipoContrato> dameTiposContrato() {
+        return TipoContrato.getTipos();
+    }
+
+//endregion
 }

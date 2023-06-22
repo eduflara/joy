@@ -25,7 +25,7 @@
         </property>
         <property name="locations">
             <list>
-                <value>file:c:/config/joy.properties</value>
+                <value>file:c:/sumainfo/config/joy.properties</value>
             </list>
         </property>
     </bean>
