@@ -21,7 +21,7 @@
         <p:dataTable widgetVar="#{cc.attrs.widgetVar}"
                      value="#{cc.attrs.tablemodel}"
                      id="#{cc.attrs.widgetVar}"
-                     var="contrato"
+                     var="lote"
                      filterEvent="enter"
                      reflow="true"
                      resizableColumns="true"
@@ -29,7 +29,7 @@
                      style="font-size: 12px"
                      rows="20"
                      selectionMode="multiple"
-                     selection="#{cc.attrs.controlador.contratosSeleccionados}"
+                     selection="#{cc.attrs.controlador.lotesSeleccionados}"
                      paginator="true"
                      paginatorPosition="bottom"
                      lazy="true"
@@ -44,69 +44,54 @@
 
             <!--<editor-fold desc="columnas de la tabla">-->
             <p:column headerText="ID" rendered="#{cc.attrs.controlador.modoDepuracion}" width="50">
-                <h:outputText value="#{contrato.id}"/>
+                <h:outputText value="#{lote.id}"/>
             </p:column>
 
-         <p:column width="55" headerText="#{contratoLbl.codigo}"
-                      filterBy="#{contrato.codigo}"
+         <p:column width="55" headerText="Contrato"
+                      filterBy="#{lote.contrato.codigo}"
                       filterValue="#{cc.attrs.tablemodel.filtros['codigo']}"
-                      sortBy="#{contrato.codigo}">
-                <h:outputText value="#{contrato.codigo}"/>
+                      sortBy="#{lote.contrato.codigo}">
+                <h:outputText value="#{lote.contrato.codigo}"/>
             </p:column>
 
-            <p:column  width="160" headerText="#{contratoLbl.cliente}"
-                       filterBy="#{contrato.cliente.codigo}"
-                       filterValue="#{cc.attrs.tablemodel.filtros['cliente.codigo']}"
-                       sortBy="#{contrato.cliente.codigo}">
-                <h:outputText value="#{contrato.cliente.codigo}"/>
+            <p:column  width="160" headerText="Objeto"
+                       filterBy="#{lote.objeto.codigo}"
+                       filterValue="#{cc.attrs.tablemodel.filtros['objeto.codigo']}"
+                       sortBy="#{lote.objeto.codigo}">
+                <h:outputText value="#{lote.objeto.codigo}"/>
             </p:column>
 
-            <p:column  width="160" headerText="#{contratoLbl.lugartasacion}"
-                      filterBy="#{contrato.lugartasacion}"
-                      filterValue="#{cc.attrs.tablemodel.filtros['lugartasacion']}"
-                      sortBy="#{contrato.lugartasacion}">
-                <h:outputText value="#{contrato.lugartasacion}"/>
+            <p:column  width="160" headerText="Gema"
+                      filterBy="#{lote.gema.codigo}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['gema']}"
+                      sortBy="#{lote.gema.codigo}">
+                <h:outputText value="#{lote.gema.codigo}"/>
             </p:column>
 
-            <p:column  width="160" headerText="#{contratoLbl.tipocontrato}"
-                       filterBy="#{contrato.tipoContrato}"
-                       filterValue="#{cc.attrs.tablemodel.filtros['tipoContrato']}"
-                       sortBy="#{contrato.tipoContrato}">
-                <h:outputText value="#{contrato.tipoContrato}"/>
+            <p:column  width="160" headerText="Metal"
+                       filterBy="#{lote.metal.codigo}"
+                       filterValue="#{cc.attrs.tablemodel.filtros['metal']}"
+                       sortBy="#{lote.metal.codigo}">
+                <h:outputText value="#{lote.metal.codigo}"/>
             </p:column>
 
-            <p:column  width="160" headerText="#{contratoLbl.mercado}"
-                       filterBy="#{contrato.mercado}"
-                       filterValue="#{cc.attrs.tablemodel.filtros['mercado']}"
-                       sortBy="#{contrato.mercado}">
-                <h:outputText value="#{contrato.mercado}"/>
-            </p:column>
-
-            <p:column headerText="#{contratoLbl.fechaAlta}" width="65"
-                      filterBy="#{contrato.fechaAlta}"
-                      filterValue="#{cc.attrs.tablemodel.filtros['fechaAlta']}"
-                      sortBy="#{contrato.fechaAlta}">
-                <h:outputText value="#{contrato.fechaAlta}">
-                    <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+            <p:column  width="160" headerText="Peso"
+                       filterBy="#{lote.peso}"
+                       filterValue="#{cc.attrs.tablemodel.filtros['peso']}"
+                       sortBy="#{lote.peso}">
+                <h:outputText value="#{lote.peso}">
+                    <f:convertNumber></f:convertNumber>
                 </h:outputText>
             </p:column>
 
-            <p:column  width="160" headerText="#{contratoLbl.tasador}"
-                       filterBy="#{contrato.tasador}"
-                       filterValue="#{cc.attrs.tablemodel.filtros['tasador']}"
-                       sortBy="#{contrato.tasador}">
-                <h:outputText value="#{contrato.tasador}"/>
+            <p:column  width="160" headerText="Importe"
+                       filterBy="#{lote.importe}"
+                       filterValue="#{cc.attrs.tablemodel.filtros['importe']}"
+                       sortBy="#{lote.importe}">
+                <h:outputText value="#{lote.importe}">
+                    <f:convertNumber></f:convertNumber>
+                </h:outputText>
             </p:column>
-
-            <p:column  width="160" headerText="#{contratoLbl.personaFirma}"
-                       filterBy="#{contrato.personafirma}"
-                       filterValue="#{cc.attrs.tablemodel.filtros['personafirma']}"
-                       sortBy="#{contrato.personafirma}">
-                <h:outputText value="#{contrato.personafirma}"/>
-            </p:column>
-
-
-            <!--</editor-fold>-->
 
             <!--<editor-fold desc="eventos ajax de la tabla">-->
             <p:ajax event="rowSelect" resetValues="true" update="#{cc.attrs.onRowSelectUpdate}"

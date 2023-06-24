@@ -4,6 +4,7 @@ import com.joyero.app.Mercado;
 import com.joyero.app.TipoContrato;
 import com.joyero.app.cliente.Cliente;
 import com.joyero.app.cliente.ClienteRest;
+import com.joyero.app.lote.LoteCtl;
 import com.joyero.base.jasperreports.JasperReportClientRest;
 import com.joyero.base.jsf.Controlador;
 import com.joyero.seguridad.controlador.ControladorSesion;
@@ -53,6 +54,9 @@ public class ContratoCtl extends Controlador<Contrato, Long> {
 
     @Autowired
     private ClienteRest clienteRest;
+
+    @Autowired
+    private LoteCtl loteCtl;
 
     //endregion
     //region Implementar y sobrescribir métodos del controlador base
@@ -118,6 +122,7 @@ public class ContratoCtl extends Controlador<Contrato, Long> {
 
     public void setContratosSeleccionados(List<Contrato> contratosSeleccionados) {
         this.contratosSeleccionados = contratosSeleccionados;
+        this.loteCtl.setIdContrato(contratosSeleccionados.get(0).getId());
     }
 
     public List<Cliente> getClientes(){

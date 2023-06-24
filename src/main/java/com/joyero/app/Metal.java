@@ -1,4 +1,4 @@
-package com.joyero.app.contrato;
+package com.joyero.app;
 
 public enum Metal {
     BLANCO("blanco", "Blanco");
@@ -6,7 +6,7 @@ public enum Metal {
     private String codigo;
     private String descripcion;
 
-    Mercado(String codigo, String descripcion) {
+    Metal(String codigo, String descripcion) {
         this.codigo = codigo;
         this.descripcion = descripcion;
     }

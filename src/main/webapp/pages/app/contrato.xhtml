@@ -58,6 +58,39 @@
                     </h:form>
                 </div>
             </div>
+            <div class="ui-g-12 ui-lg-12 dashboard">
+                <div class="card">
+                    <h1>Lotes</h1>
+                    <h:form>
+                        <p:toolbar>
+                            <p:toolbarGroup styleClass="ui-inputgroup">
+                                <p:commandButton title="#{txt.nuevo}" icon="fa fa-file-o"
+                                                 actionListener="#{contratoCtl.nuevo()}" process="@this"
+                                                 resetValues="true"
+                                                 oncomplete="PF('contratoTbl').filter(); PF('contratoTbl').unselectAllRows();PF('contratoDlg').show()"/>
+
+                                <p:commandButton title="#{contratoCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                                 icon="fa fa-floppy-o" actionListener="#{contratoCtl.guardar()}"
+                                                 process="@form"
+                                                 update="@form"
+                                                 oncomplete="PF('contratoTbl').filter(); PF('contratoTbl').unselectAllRows();"/>
+
+                                <p:commandButton title="#{txt.eliminar}" icon="fa fa-trash-o"
+                                                 actionListener="#{contratoCtl.eliminar()}" process="@this" update="@form"
+                                                 oncomplete="PF('contratoTbl').filter(); PF('contratoTbl').unselectAllRows();">
+                                    <p:confirm header="#{txt.confirmacion}" message="#{txt.deseaEliminar}" icon="ui-icon-alert"/>
+                                </p:commandButton>
+
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <app:contratoTbl tablemodel="#{loteCtl.tablemodel}"
+                                         widgetVar="loteTbl"
+                                         controlador="#{loteCtl}"
+                                         exportable="true"/>
+                    </h:form>
+                </div>
+            </div>
         </div>
 
     </ui:define>
