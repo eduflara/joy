@@ -17,21 +17,19 @@
     </composite:interface>
 
     <composite:implementation>
-        <f:loadBundle basename="com.joyero.app.pedido" var="pedidoLbl"/>
-        <p:outputLabel rendered="#{cc.attrs.entidad.id ne null}" value="#{pedidoLbl.estado}"
-                       for="@next"/>
-
+        <f:loadBundle basename="com.joyero.app.contrato" var="contratoLbl"/>
         <p:dataTable widgetVar="#{cc.attrs.widgetVar}"
                      value="#{cc.attrs.tablemodel}"
                      id="#{cc.attrs.widgetVar}"
-                     var="recepcionPedido"
+                     var="contrato"
                      filterEvent="enter"
                      reflow="true"
                      resizableColumns="true"
-                     sortBy="#{recepcionPedido.id}"
+                     sortBy="#{contrato.id}"
+                     style="font-size: 12px"
                      rows="20"
-                     selectionMode="single"
-                     selection="#{cc.attrs.tablemodel.seleccion}"
+                     selectionMode="multiple"
+                     selection="#{cc.attrs.controlador.contratosSeleccionados}"
                      paginator="true"
                      paginatorPosition="bottom"
                      lazy="true"
@@ -46,46 +44,67 @@
 
             <!--<editor-fold desc="columnas de la tabla">-->
             <p:column headerText="ID" rendered="#{cc.attrs.controlador.modoDepuracion}" width="50">
-                <h:outputText value="#{recepcionPedido.id}"/>
+                <h:outputText value="#{contrato.id}"/>
             </p:column>
 
-
-            <p:column headerText="#{pedidoLbl.unidadesRecepcionadas}"
-                      filterBy="#{recepcionPedido.unidades}"
-                      filterValue="#{cc.attrs.tablemodel.filtros['recepcionPedido.unidades']}"
-                      sortBy="#{recepcionPedido.unidades}">
-                <h:outputText value="#{recepcionPedido.unidades}"/>
+         <p:column width="55" headerText="#{contratoLbl.codigo}"
+                      filterBy="#{contrato.codigo}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['codigo']}"
+                      sortBy="#{contrato.codigo}">
+                <h:outputText value="#{contrato.codigo}"/>
             </p:column>
 
-            <p:column headerText="#{pedidoLbl.unidadesRecepcionadasAlmacen}"
-                      filterBy="#{recepcionPedido.unidadesAlmacen}"
-                      filterValue="#{cc.attrs.tablemodel.filtros['recepcionPedido.unidadesAlmacen']}"
-                      sortBy="#{recepcionPedido.unidadesAlmacen}">
-                <h:outputText value="#{recepcionPedido.unidadesAlmacen}"/>
+            <p:column  width="160" headerText="#{contratoLbl.cliente}"
+                       filterBy="#{contrato.cliente.codigo}"
+                       filterValue="#{cc.attrs.tablemodel.filtros['cliente.codigo']}"
+                       sortBy="#{contrato.cliente.codigo}">
+                <h:outputText value="#{contrato.cliente.codigo}"/>
             </p:column>
 
-            <p:column headerText="#{pedidoLbl.coste}"
-                      filterBy="#{recepcionPedido.coste}"
-                      filterValue="#{cc.attrs.tablemodel.filtros['recepcionPedido.coste']}"
-                      sortBy="#{recepcionPedido.coste}">
-                <h:outputText value="#{recepcionPedido.coste}"/>
+            <p:column  width="160" headerText="#{contratoLbl.lugartasacion}"
+                      filterBy="#{contrato.lugartasacion}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['lugartasacion']}"
+                      sortBy="#{contrato.lugartasacion}">
+                <h:outputText value="#{contrato.lugartasacion}"/>
             </p:column>
 
-            <p:column headerText="#{pedidoLbl.fechaRecibido}"
-                      filterBy="#{recepcionPedido.fecha}"
-                      filterValue="#{cc.attrs.tablemodel.filtros['fechaRecibido.fecha']}"
-                      sortBy="#{recepcionPedido.fecha}">
-                <h:outputText value="#{recepcionPedido.fecha}">
-                    <f:convertDateTime pattern="dd-MM-yyyy HH:mm" type="localDate" />
+            <p:column  width="160" headerText="#{contratoLbl.tipocontrato}"
+                       filterBy="#{contrato.tipoContrato}"
+                       filterValue="#{cc.attrs.tablemodel.filtros['tipoContrato']}"
+                       sortBy="#{contrato.tipoContrato}">
+                <h:outputText value="#{contrato.tipoContrato}"/>
+            </p:column>
+
+            <p:column  width="160" headerText="#{contratoLbl.mercado}"
+                       filterBy="#{contrato.mercado}"
+                       filterValue="#{cc.attrs.tablemodel.filtros['mercado']}"
+                       sortBy="#{contrato.mercado}">
+                <h:outputText value="#{contrato.mercado}"/>
+            </p:column>
+
+            <p:column headerText="#{contratoLbl.fechaAlta}" width="65"
+                      filterBy="#{contrato.fechaAlta}"
+                      filterValue="#{cc.attrs.tablemodel.filtros['fechaAlta']}"
+                      sortBy="#{contrato.fechaAlta}">
+                <h:outputText value="#{contrato.fechaAlta}">
+                    <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
                 </h:outputText>
             </p:column>
 
-            <p:column headerText="#{pedidoLbl.referenciaProveedor}"
-                      filterBy="#{recepcionPedido.referenciaProveedor}"
-                      filterValue="#{cc.attrs.tablemodel.filtros['recepcionPedido.referenciaProveedor']}"
-                      sortBy="#{recepcionPedido.referenciaProveedor}">
-                <h:outputText value="#{recepcionPedido.referenciaProveedor}"/>
+            <p:column  width="160" headerText="#{contratoLbl.tasador}"
+                       filterBy="#{contrato.tasador}"
+                       filterValue="#{cc.attrs.tablemodel.filtros['tasador']}"
+                       sortBy="#{contrato.tasador}">
+                <h:outputText value="#{contrato.tasador}"/>
             </p:column>
+
+            <p:column  width="160" headerText="#{contratoLbl.personaFirma}"
+                       filterBy="#{contrato.personafirma}"
+                       filterValue="#{cc.attrs.tablemodel.filtros['personafirma']}"
+                       sortBy="#{contrato.personafirma}">
+                <h:outputText value="#{contrato.personafirma}"/>
+            </p:column>
+
 
             <!--</editor-fold>-->
 
