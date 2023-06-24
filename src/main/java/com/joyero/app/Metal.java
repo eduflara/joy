@@ -1,5 +1,9 @@
 package com.joyero.app;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public enum Metal {
     BLANCO("blanco", "Blanco");
 
@@ -26,4 +30,9 @@ public enum Metal {
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
+
+    public static List<Metal> dameMetales() {
+        return new ArrayList<>(Arrays.asList(Metal.values()));
+    }
+
 }

@@ -27,7 +27,7 @@
         <div class="ui-g">
             <div class="ui-g-12 ui-lg-12 dashboard">
                 <div class="card">
-                    <h1>#{contratoLbl['listado']}</h1>
+                    <h1>Contratos</h1>
                     <h:form>
                         <p:toolbar>
                             <p:toolbarGroup styleClass="ui-inputgroup">
@@ -65,9 +65,9 @@
                         <p:toolbar>
                             <p:toolbarGroup styleClass="ui-inputgroup">
                                 <p:commandButton title="#{txt.nuevo}" icon="fa fa-file-o"
-                                                 actionListener="#{contratoCtl.nuevo()}" process="@this"
+                                                 actionListener="#{loteCtl.nuevo()}" process="@this"
                                                  resetValues="true"
-                                                 oncomplete="PF('contratoTbl').filter(); PF('contratoTbl').unselectAllRows();PF('contratoDlg').show()"/>
+                                                 oncomplete="PF('loteTbl').filter(); PF('loteTbl').unselectAllRows();PF('loteDlg').show()"/>
 
                                 <p:commandButton title="#{contratoCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
                                                  icon="fa fa-floppy-o" actionListener="#{contratoCtl.guardar()}"
@@ -84,7 +84,7 @@
                             </p:toolbarGroup>
                         </p:toolbar>
 
-                        <app:contratoTbl tablemodel="#{loteCtl.tablemodel}"
+                        <app:loteTbl tablemodel="#{loteCtl.tablemodel}"
                                          widgetVar="loteTbl"
                                          controlador="#{loteCtl}"
                                          exportable="true"/>
@@ -146,6 +146,51 @@
                                  oncomplete="PF('contratoTbl').filter(); PF('contratoTbl').unselectAllRows();"/>
 
             </div>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Nuevo Lote" modal="true" width="800" widgetVar="loteDlg">
+            <h:form prepenId="false" id="loteForm">
+                <div class="fieldset ui-fluid">
+                    <p:messages autoUpdate="false" showDetail="true" showSummary="false"/>
+
+                    <p:outputLabel value="Objeto" for="@next"></p:outputLabel>
+                    <p:selectOneMenu id="objetoSelector" widgetVar="objetoSelector"
+                                     value="#{loteCtl.codigoObjeto}">
+                        <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                        <f:selectItems value="#{loteCtl.dameObjetos()}" var="objeto" itemLabel="#{objeto.descripcion}" itemValue="#{objeto.codigo}"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="Descripcion"></p:outputLabel>
+                    <p:inputTextarea value="#{loteCtl.entidad.descripcion}" rows="3" cols="50"></p:inputTextarea>
+
+                    <p:outputLabel value="Gema" for="@next"></p:outputLabel>
+                    <p:selectOneMenu id="gemaSelector" widgetVar="gemaSelector"
+                                     value="#{loteCtl.codigoGema}">
+                        <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                        <f:selectItems value="#{loteCtl.dameGemas()}" var="gema" itemLabel="#{gema.descripcion}" itemValue="#{gema.codigo}"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="Metal" for="@next"></p:outputLabel>
+                    <p:selectOneMenu id="metalSelector" widgetVar="metalSelector"
+                                     value="#{loteCtl.codigoMetal}">
+                        <f:selectItem itemLabel="" itemValue="" noSelectionOption="true"/>
+                        <f:selectItems value="#{loteCtl.dameMetales()}" var="metal" itemLabel="#{metal.descripcion}" itemValue="#{metal.codigo}"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="Peso"></p:outputLabel>
+                    <p:inputNumber value="#{loteCtl.entidad.peso}"></p:inputNumber>
+
+                    <p:outputLabel value="Cantidad"></p:outputLabel>
+                    <p:inputNumber value="#{loteCtl.entidad.cantidad}"></p:inputNumber>
+
+                    <p:commandButton title="#{contratoCtl.modificarRegistro ?  txt.modificar : txt.guardar}"
+                                     icon="fa fa-floppy-o" actionListener="#{contratoCtl.guardar()}"
+                                     process="@form"
+                                     update="@form"
+                                     oncomplete="PF('contratoTbl').filter(); PF('contratoTbl').unselectAllRows();"/>
+
+                </div>
             </h:form>
         </p:dialog>
 

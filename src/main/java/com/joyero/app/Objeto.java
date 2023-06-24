@@ -1,5 +1,9 @@
 package com.joyero.app;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public enum Objeto {
     SORTIJA("sortija", "Sortija");
 
@@ -25,5 +29,9 @@ public enum Objeto {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public static List<Objeto> dameObjetos() {
+        return new ArrayList<>(Arrays.asList(Objeto.values()));
     }
 }
